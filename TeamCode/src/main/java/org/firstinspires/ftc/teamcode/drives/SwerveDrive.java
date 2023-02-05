@@ -31,12 +31,6 @@ public class SwerveDrive extends Drivetrain {
         if (fieldCentric) return angle + getIMU().getZAngle();
         return angle;
     }
-    public void setSpeed(double speed) {
-        this.speed = speed;
-    }
-    public double getSpeed() {
-        return speed;
-    }
     public void makeRobotCentric() {
         fieldCentric = false;
     }
@@ -45,12 +39,6 @@ public class SwerveDrive extends Drivetrain {
     }
     public boolean isFieldCentric() {
         return fieldCentric;
-    }
-    public void upSpeed(double amount) {
-        speed += amount;
-    }
-    public void dropSpeed(double amount) {
-        speed -= amount;
     }
 
     public SwerveDrive(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -78,7 +66,7 @@ public class SwerveDrive extends Drivetrain {
         }
 
         if(Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
-            drive((-turn * getSpeed()), (-turn * getSpeed()), (turn * getSpeed()), (turn * getSpeed()));
+            drive(-turn, -turn, turn, turn);
             return;
         }
 
@@ -117,11 +105,18 @@ public class SwerveDrive extends Drivetrain {
         drive(llPower, lrPower, rlPower, rrPower);
     }
 
-    public void drive(double p1, double p2, double p3, double p4) {
-        leftMotorLeft.setPower(Range.clip(p1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        leftMotorRight.setPower(Range.clip(p2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        rightMotorLeft.setPower(Range.clip(p3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        rightMotorRight.setPower(Range.clip(p4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+    /**
+     * @param m1 motor power level 1
+     * @param m2 motor power level 2
+     * @param m3 motor power level 3
+     * @param m4 motor power level 4
+     */
+    @Override
+    public void drive(double m1, double m2, double m3, double m4) {
+        leftMotorLeft.setPower(Range.clip(m1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        leftMotorRight.setPower(Range.clip(m2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        rightMotorLeft.setPower(Range.clip(m3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        rightMotorRight.setPower(Range.clip(m4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
     }
 
     public void turnWheelToAngle(double target) {
