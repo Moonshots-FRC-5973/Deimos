@@ -19,8 +19,7 @@ public class Deimos extends LinearOpMode {
     private Camera camera;
     private double lastTime = 0.0d;
     private final ElapsedTime elapsedTime = new ElapsedTime();
-    private boolean gp1aPressed = false;
-
+    
     @Override
     public void runOpMode() throws InterruptedException {
         // Init (runs once)
