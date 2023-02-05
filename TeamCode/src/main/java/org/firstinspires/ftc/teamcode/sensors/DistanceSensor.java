@@ -14,6 +14,10 @@ public class DistanceSensor {
         distanceSensor = (Rev2mDistanceSensor)converter;
     }
 
+    public double getDistance() {
+        return getDistance(DistanceUnit.CM);
+    }
+
     public double getDistance(DistanceUnit unit) {
         return distanceSensor.getDistance(unit);
     }

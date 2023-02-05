@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.drives;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.Range;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.wrappers.IMU;
 
 public abstract class Drivetrain {
@@ -21,6 +18,10 @@ public abstract class Drivetrain {
     protected Telemetry telemetry;
     protected IMU imu;
 
+    // Drivetrain instance-specific variables
+    protected boolean turningToAngle = false;
+
+    // General Drivetrain subsystems and get methods for them
     public Telemetry getTelemetry() {
         return telemetry;
     }
@@ -59,6 +60,15 @@ public abstract class Drivetrain {
 
     /**
      * @brief Blocking call to a robot rotation
+    public abstract void drive(double m1, double m2, double m3, double m4);
+
+    /**
+     * DEPRECEATED: There is no reason to use this
+     */
+    @Deprecated
+    public abstract void resetWheels();
+
+    /**
      * @param target the absolute angle to move to
      */
     public abstract void turnRobotToAngle(double target);
@@ -70,7 +80,7 @@ public abstract class Drivetrain {
     public void turnRobotByDegree(double target) { turnRobotToAngle(imu.getZAngle() + target); }
 
     /**
-     * @brief Stops the drive from moving
+     * Stops the drive from moving
      */
     public void stop() {
         drive(0.0d, 0.0d, 0.0d, 0.0d);
