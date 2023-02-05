@@ -10,21 +10,49 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Constants;
 
 public class SwerveDrive extends Drivetrain {
-    // Left side, left motor
-    public final DcMotor llMotor;
-    // Left side, right motor
-    public final DcMotor lrMotor;
-    // Right side, left motor
-    public final DcMotor rlMotor;
-    // Right side, right motor
-    public final DcMotor rrMotor;
-    // Autonomous control functions
-    private boolean moveForwardAuto = false;
-    private boolean rotateRobotAuto = false;
-    private boolean rotateWheelAuto = false;
-    private double targetWheelAngle = 0.0d;
-    private double targetRobotAngle = 0.0d;
+    public final DcMotor leftMotorLeft;   // +Power = left wheel turning left
+    public final DcMotor leftMotorRight;  // +Power = left wheel turning right
+    public final DcMotor rightMotorLeft;  // +Power = right wheel turning right
+    public final DcMotor rightMotorRight;
+    private boolean fieldCentric = true;
 
+    public int getLeftEncodersDifference() {
+        return leftMotorLeft.getCurrentPosition() - leftMotorRight.getCurrentPosition();
+    }
+    public double getLeftWheelAngle() {
+        double angle = (360 * (getLeftEncodersDifference() % ENCODER_COUNTS_PER_REV) / ENCODER_COUNTS_PER_REV);
+        if(fieldCentric) return angle + getIMU().getZAngle();
+        return angle;
+    }
+    public int getRightEncodersDifference() {
+        return rightMotorLeft.getCurrentPosition() - rightMotorRight.getCurrentPosition();
+    }
+    public double getRightWheelAngle() {
+        double angle = (360 * (getRightEncodersDifference() % ENCODER_COUNTS_PER_REV) / ENCODER_COUNTS_PER_REV);
+        if (fieldCentric) return angle + getIMU().getZAngle();
+        return angle;
+    }
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+    public double getSpeed() {
+        return speed;
+    }
+    public void makeRobotCentric() {
+        fieldCentric = false;
+    }
+    public void switchMode() {
+        fieldCentric = !fieldCentric;
+    }
+    public boolean isFieldCentric() {
+        return fieldCentric;
+    }
+    public void upSpeed(double amount) {
+        speed += amount;
+    }
+    public void dropSpeed(double amount) {
+        speed -= amount;
+    }
 
     public SwerveDrive(HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap, telemetry, new IMU.Parameters(
