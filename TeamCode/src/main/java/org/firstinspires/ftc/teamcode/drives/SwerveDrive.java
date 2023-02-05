@@ -152,12 +152,18 @@ public class SwerveDrive extends Drivetrain {
         drive(llPower, lrPower, rlPower, rrPower);
     }
 
+    /**
+     * @param m1 motor power level 1
+     * @param m2 motor power level 2
+     * @param m3 motor power level 3
+     * @param m4 motor power level 4
+     */
     @Override
     public void drive(double m1, double m2, double m3, double m4) {
-        llMotor.setPower(Range.clip(m1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        lrMotor.setPower(Range.clip(m2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        rlMotor.setPower(Range.clip(m3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        rrMotor.setPower(Range.clip(m4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        leftMotorLeft.setPower(Range.clip(m1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        leftMotorRight.setPower(Range.clip(m2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        rightMotorLeft.setPower(Range.clip(m3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        rightMotorRight.setPower(Range.clip(m4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
     }
 
     @Override

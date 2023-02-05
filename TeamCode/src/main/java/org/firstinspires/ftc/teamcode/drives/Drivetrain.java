@@ -20,8 +20,9 @@ public abstract class Drivetrain {
 
     // Drivetrain instance-specific variables
     protected boolean turningToAngle = false;
+    protected Telemetry telemetry;
+    protected IMU imu;
 
-    // General Drivetrain subsystems and get methods for them
     public Telemetry getTelemetry() {
         return telemetry;
     }
@@ -30,6 +31,8 @@ public abstract class Drivetrain {
         return imu;
     }
 
+    public double speed = 1;
+    protected boolean isFieldCentric = true;
     public void toggleFieldCentric() {
         isFieldCentric = !isFieldCentric;
     }
