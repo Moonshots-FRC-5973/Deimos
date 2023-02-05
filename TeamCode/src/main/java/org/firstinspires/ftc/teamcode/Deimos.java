@@ -107,6 +107,6 @@ public class Deimos extends LinearOpMode {
     }
 
     private void driver2Inputs() {
-
+        
     }
 }
