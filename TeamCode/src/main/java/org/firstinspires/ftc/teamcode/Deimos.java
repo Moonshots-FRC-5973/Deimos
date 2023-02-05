@@ -16,8 +16,6 @@ public class Deimos extends LinearOpMode {
 /*
     <<<<<<< Updated upstream
     //private SwerveDrive drive;
-=======
->>>>>>> Stashed changes
 
  */
     private MecanumDrive drive;
@@ -35,6 +33,23 @@ public class Deimos extends LinearOpMode {
 
         // Init Loop (runs until stop button or start button is pressed)
         while(opModeInInit()) {
+=======
+
+@TeleOp(name="Deimos")
+public class Deimos extends LinearOpMode {
+    private MecanumDrive drive;
+    private ElapsedTime elapsedTime = new ElapsedTime();
+    private boolean gp1aPressed = false;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        // Init (runs once)
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        drive = new MecanumDrive(hardwareMap, telemetry);
+
+        // Init Loop (runs until stop button or start button is pressed)
+        while(!opModeIsActive()) {
+>>>>>>> b8e28d0 (Add FTCDashboard, Clean up drives, fix wrappers)
             telemetry.addData("G1LS", "(%f, %f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("G2LS", "(%f, %f)", gamepad2.left_stick_x, gamepad2.left_stick_y);
@@ -110,9 +125,9 @@ public class Deimos extends LinearOpMode {
         }
         else {
             telemetry.addData("Drive", "Listening to LSX, LSY, RSX");
-            double forward = gamepad1.left_stick_y;
+            double forward = -gamepad1.left_stick_y; // flight stick inversion
             double strafe = gamepad1.left_stick_x;
-            double turn = gamepad1.right_stick_x;
+            double rotate = gamepad1.right_stick_x;
 
             // DEADZONES
             if (Math.abs(forward) <= Constants.INPUT_THRESHOLD) forward = 0.0d;
