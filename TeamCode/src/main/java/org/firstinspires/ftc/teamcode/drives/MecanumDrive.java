@@ -110,7 +110,9 @@ public class MecanumDrive extends Drivetrain {
         // --------------------
 
         if(telemetry != null) {
-            telemetry.addData("Gyro Error", gyroError);
+            telemetry.addData("Gyro Locked", gyroLocked);
+            telemetry.addData("Gyro Target", gyroTarget);
+            telemetry.addData("Error", gyroError);
         }
 
         drive(
@@ -130,6 +132,13 @@ public class MecanumDrive extends Drivetrain {
      * @param rightRear
      */
     public void drive(double leftFront, double leftRear, double rightFront, double rightRear) {
+        if(telemetry != null) {
+            telemetry.addData("leftFront", leftFront);
+            telemetry.addData("leftRear", leftRear);
+            telemetry.addData("rightFront", rightFront);
+            telemetry.addData("rightRear", rightRear);
+        }
+
         leftFrontDrive.setPower(Range.clip(leftFront, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
         leftBackDrive.setPower(Range.clip(leftRear, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
         rightFrontDrive.setPower(Range.clip(rightFront, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
@@ -137,7 +146,48 @@ public class MecanumDrive extends Drivetrain {
     }
 
     @Override
-    public void turnRobotToAngle(double target) {
+    public void resetWheels() {
+        drive(
+                -leftFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
+                -leftBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
+                -rightFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
+                -rightBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV
+        );
+    }
 
+    @Override
+    public void turnRobotToAngle(double target) {
+        gyroLocked = true;
+        gyroTarget = target;
+        // Get the error. Positive means we need to rotate to the left
+        double error = gyroTarget - imu.getZAngle();
+        // Ensure we don't move farther than one rotation
+        error %= 360;
+        if(telemetry != null)
+            telemetry.addData("Rot Error", error);
+        // If we are within the requested tolerance (Constants.DRIVE_ANGLE_TOLERANCE), we should stop turning
+        if(Math.abs(error) <= ANGLE_TOLERANCE) {
+            stop();
+            turningToAngle = false;
+            return;
+        } else {
+            turningToAngle = true;
+        }
+        // As we approach the angle, we need to slow down the rotation
+        double power = Range.clip(-error / 360, -0.5, 0.5);
+        drive(power, power, -power, -power);
+    }
+
+    public void disableGyroLock(){
+        gyroLocked = false;
+    }
+
+    public void setGyroLock(){
+        gyroTarget = imu.getZAngle();
+        gyroLocked = true;
+    }
+
+    public void turnToGyroLock() {
+        turnRobotToAngle(gyroTarget);
     }
 }
