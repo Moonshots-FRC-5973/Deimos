@@ -7,37 +7,14 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
-import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
-import org.firstinspires.ftc.teamcode.vision.Camera;
 
 @TeleOp(name="Deimos")
 public class Deimos extends LinearOpMode {
-/*
-    <<<<<<< Updated upstream
-    //private SwerveDrive drive;
-
- */
-    private MecanumDrive drive;
+    private SwerveDrive drive;
+    private Camera camera;
     private double lastTime = 0.0d;
-    private final ElapsedTime elapsedTime = new ElapsedTime();
-
-    private boolean gp1aPressed = false;
-    
-    @Override
-    public void runOpMode() {
-        // Init (runs once)
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-
-        drive = new MecanumDrive(hardwareMap, telemetry);
-
-        // Init Loop (runs until stop button or start button is pressed)
-        while(opModeInInit()) {
-=======
-
-@TeleOp(name="Deimos")
-public class Deimos extends LinearOpMode {
-    private MecanumDrive drive;
     private ElapsedTime elapsedTime = new ElapsedTime();
     private boolean gp1aPressed = false;
 
@@ -45,7 +22,8 @@ public class Deimos extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Init (runs once)
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        drive = new MecanumDrive(hardwareMap, telemetry);
+        drive = new SwerveDrive(hardwareMap, null);
+        //camera = new Camera(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
         while(!opModeIsActive()) {
@@ -54,6 +32,9 @@ public class Deimos extends LinearOpMode {
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("G2LS", "(%f, %f)", gamepad2.left_stick_x, gamepad2.left_stick_y);
             telemetry.addData("G2RS", "(%f, %f)", gamepad2.right_stick_x, gamepad2.right_stick_y);
+            //List<Recognition> recognitionList = camera.getRecognitions();
+            //telemetry.addData("Recognition Count", recognitionList.size());
+            telemetry.update();
             telemetry.update();
         }
         // Start (runs once)
@@ -67,15 +48,13 @@ public class Deimos extends LinearOpMode {
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("UPS", 1 / (elapsedTime.seconds() - lastTime));
             lastTime = elapsedTime.seconds();
-            //
             // Driver 1: Responsible for drivetrain and movement
             driver1Inputs();
             // Driver 2: Responsible for the subsystem attachment
             driver2Inputs();
             //
-
-
-
+            //List<Recognition> recognitionList = camera.getRecognitions();
+            //telemetry.addData("Recognition Count", recognitionList.size());
             telemetry.update();
         }
         // Stop (runs once)
@@ -134,7 +113,7 @@ public class Deimos extends LinearOpMode {
             if (Math.abs(strafe) <= Constants.INPUT_THRESHOLD)  strafe = 0.0d;
             if (Math.abs(turn) <= Constants.INPUT_THRESHOLD) turn = 0.0d;
 
-            drive.drive(forward, strafe, turn);
+            drive.drive(-forward, -strafe, -rotate);
         }
 
         if(gamepad1.a && !gp1aPressed && !gamepad1.start) {
@@ -154,6 +133,8 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
-        
+        if(gamepad2.a) {
+            drive.setDistanceToTravel(1);
+        }
     }
 }
