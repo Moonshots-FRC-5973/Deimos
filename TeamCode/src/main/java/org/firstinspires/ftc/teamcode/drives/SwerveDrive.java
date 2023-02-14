@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drives;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -9,137 +10,164 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Constants;
 
 public class SwerveDrive extends Drivetrain {
-    public final DcMotor leftMotorLeft;   // +Power = left wheel turning left
-    public final DcMotor leftMotorRight;  // +Power = left wheel turning right
-    public final DcMotor rightMotorLeft;  // +Power = right wheel turning right
-    public final DcMotor rightMotorRight;
-    private boolean fieldCentric = true;
+    // Left side, left motor
+    public final DcMotor llMotor;
+    // Left side, right motor
+    public final DcMotor lrMotor;
+    // Right side, left motor
+    public final DcMotor rlMotor;
+    // Right side, right motor
+    public final DcMotor rrMotor;
+    // Autonomous control functions
+    private boolean moveForwardAuto = false;
 
-    public int getLeftEncodersDifference() {
-        return leftMotorLeft.getCurrentPosition() - leftMotorRight.getCurrentPosition();
-    }
-    public double getLeftWheelAngle() {
-        double angle = (360 * (getLeftEncodersDifference() % ENCODER_COUNTS_PER_REV) / ENCODER_COUNTS_PER_REV);
-        if(fieldCentric) return angle + getIMU().getZAngle();
-        return angle;
-    }
-    public int getRightEncodersDifference() {
-        return rightMotorLeft.getCurrentPosition() - rightMotorRight.getCurrentPosition();
-    }
-    public double getRightWheelAngle() {
-        double angle = (360 * (getRightEncodersDifference() % ENCODER_COUNTS_PER_REV) / ENCODER_COUNTS_PER_REV);
-        if (fieldCentric) return angle + getIMU().getZAngle();
-        return angle;
-    }
-    public void makeRobotCentric() {
-        fieldCentric = false;
-    }
-    public void switchMode() {
-        fieldCentric = !fieldCentric;
-    }
-    public boolean isFieldCentric() {
-        return fieldCentric;
-    }
 
     public SwerveDrive(HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap, telemetry);
 
-        leftMotorLeft = hardwareMap.get(DcMotor.class, "left_drive_left");
-        leftMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        leftMotorRight = hardwareMap.get(DcMotor.class, "left_drive_right");
-        leftMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        rightMotorLeft = hardwareMap.get(DcMotor.class, "right_drive_left");
-        rightMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        rightMotorRight = hardwareMap.get(DcMotor.class, "right_drive_right");
-        rightMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        llMotor = hardwareMap.get(DcMotor.class, "llMotor");
+        lrMotor = hardwareMap.get(DcMotor.class, "lrMotor");
+        rlMotor = hardwareMap.get(DcMotor.class, "rlMotor");
+        rrMotor = hardwareMap.get(DcMotor.class, "rrMotor");
     }
 
+    @Override
     public void drive(double forward, double strafe, double turn) {
-        if(Math.abs(forward) <= Constants.INPUT_THRESHOLD) {
-            forward = 0.0d;
-        }
-        if(Math.abs(strafe) <= Constants.INPUT_THRESHOLD) {
-            strafe = 0.0d;
-        }
+        double rightWheelAngle = (360 * ((rlMotor.getCurrentPosition() - rrMotor.getCurrentPosition()) % ENCODER_COUNTS_PER_REV) / ENCODER_COUNTS_PER_REV);
+        double leftWheelAngle = (360 * ((llMotor.getCurrentPosition() - lrMotor.getCurrentPosition()) % ENCODER_COUNTS_PER_REV) / ENCODER_COUNTS_PER_REV);
+        double leftRotPower, rightRotPower;
+        double multiplier = 1;
 
+
+        // ______________
+        // -- ROTATION --
         if(Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
-            drive(-turn, -turn, turn, turn);
+            // If Wheel's forward face is away from the 0 mark, reverse rotation
+            if(Math.abs(leftWheelAngle) >= 90) {
+                multiplier = -1;
+            }
+            // multiplier flips rotation direction; Rest calculates how much rotation we need
+            // https://www.geogebra.org/calculator/ucaxvmtw
+            leftRotPower = multiplier * WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-leftWheelAngle));
+            rightRotPower = multiplier * WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-rightWheelAngle));
+            turn *= multiplier;
+            drive(-turn + leftRotPower, -turn - leftRotPower, rightRotPower - turn, -turn - rightRotPower);
             return;
         }
 
-        // Translate XY input to degree and power
-        double targetAngle = Math.atan2(forward, strafe); // -180 - 180 // Math.atan2 fails at -90 and 90
-        double power = Math.sqrt(Math.pow(forward, 2) + Math.pow(strafe, 2));
-        double leftAngleDiff = getLeftWheelAngle() - targetAngle;
-
-        double ltPower = getLeftWheelAngle();
-
-        // Quadrant Check to move in the correct direction / fastest direction
-        if(leftAngleDiff <= 0 && leftAngleDiff > 90) {
-            // Quadrant: 1
-        } else if(leftAngleDiff <= 90 && leftAngleDiff > 180) {
-            // Quadrant: 2
-        } else if(leftAngleDiff <= 180 && leftAngleDiff > 270) {
-            // Quadrant: 3
-        } else {
-            // Quadrant: 4
+        // Field Centric adjustment
+        if (isFieldCentric) {
+            // Learn more:
+            // https://www.geogebra.org/m/fmegkksm
+            double temp = forward;
+            forward = forward * Math.cos(Math.toRadians(imu.getZAngle())) - strafe * Math.sin(Math.toRadians(imu.getZAngle()));
+            strafe = temp * Math.sin(Math.toRadians(imu.getZAngle())) + strafe * Math.cos(Math.toRadians(imu.getZAngle()));
         }
 
-        // Wheel | Motor
-        // <l, r><l, r>Power
-        double llPower = power;
-        double lrPower = power;
-        double rlPower = power;
-        double rrPower = power;
-
-        if(getTelemetry() != null) {// In case no messages should be sent.
-            getTelemetry().addData("Target Angle", targetAngle);
-            getTelemetry().addData("Power", power);
-            getTelemetry().addData("Left Wheel Angle", getLeftWheelAngle());
-            getTelemetry().addData("Right Wheel Angle", getRightWheelAngle());
+        // Calculate magnitude of joystick being pushed
+        double radius = Math.sqrt(Math.pow(forward, 2) + Math.pow(strafe, 2));
+        if(radius <= Constants.INPUT_THRESHOLD) {
+            if (!moveForwardAuto) {
+                stop();
+            }
+            return;
         }
 
+        moveForwardAuto = false;
+        llMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rlMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // Left is reversed due to gearing
+        double llPower = -radius;
+        double lrPower = -radius;
+        double rlPower = radius;
+        double rrPower = radius;
+
+        // Point wheels in correct direction
+        double targetAngle = Math.toDegrees(Math.atan2(strafe, forward));
+        double leftAngleDiff = targetAngle - leftWheelAngle;
+        double rightAngleDiff = targetAngle - rightWheelAngle;
+
+        if(telemetry != null) {
+            telemetry.addData("Target Angle", targetAngle);
+            telemetry.addData("Left Wheel Diff", leftAngleDiff);
+            telemetry.addData("Right Wheel Diff", rightAngleDiff);
+        }
+
+        // Deadzones
+        if(Math.abs(leftAngleDiff) <= ANGLE_TOLERANCE) {
+            leftAngleDiff = 0.0d;
+        }
+        if(Math.abs(rightAngleDiff) <= ANGLE_TOLERANCE) {
+            rightAngleDiff = 0.0d;
+        }
+
+        // Reverse power if closer to go to 180 than 0
+        if (Math.abs(leftAngleDiff) >= 90){
+            multiplier = -1;
+        }
+
+        llPower *= multiplier;
+        lrPower *= multiplier;
+        rlPower *= multiplier;
+        rrPower *= multiplier;
+
+        leftRotPower = multiplier * WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(leftAngleDiff));
+        llPower += leftRotPower;
+        lrPower -= leftRotPower;
+        rightRotPower = multiplier * WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(rightAngleDiff));
+        rlPower += rightRotPower;
+        rrPower -= rightRotPower;
+
+        // Add Forward Drive power
         drive(llPower, lrPower, rlPower, rrPower);
     }
 
-    /**
-     * @param m1 motor power level 1
-     * @param m2 motor power level 2
-     * @param m3 motor power level 3
-     * @param m4 motor power level 4
-     */
     @Override
     public void drive(double m1, double m2, double m3, double m4) {
-        leftMotorLeft.setPower(Range.clip(m1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        leftMotorRight.setPower(Range.clip(m2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        rightMotorLeft.setPower(Range.clip(m3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-        rightMotorRight.setPower(Range.clip(m4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        llMotor.setPower(Range.clip(m1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        lrMotor.setPower(Range.clip(m2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        rlMotor.setPower(Range.clip(m3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
+        rrMotor.setPower(Range.clip(m4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
     }
 
-    public void turnWheelToAngle(double target) {
-        if(Math.abs(getLeftWheelAngle() - target) >= ANGLE_TOLERANCE) {
-            leftMotorLeft.setPower(-0.75d);
-            leftMotorRight.setPower(0.75d);
-        }
-        if(Math.abs(getRightWheelAngle() - target) >= ANGLE_TOLERANCE) {
-            rightMotorLeft.setPower(-0.75d);
-            rightMotorRight.setPower(0.75d);
-        }
-    }
     public void resetWheels() {
         drive(
-                -leftMotorLeft.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -leftMotorRight.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightMotorLeft.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightMotorRight.getCurrentPosition() / ENCODER_COUNTS_PER_REV
+                -llMotor.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
+                -lrMotor.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
+                -rlMotor.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
+                -rrMotor.getCurrentPosition() / ENCODER_COUNTS_PER_REV
         );
     }
 
     @Override
     public void turnRobotToAngle(double target) {
 
+    }
+
+    public void setDistanceToTravel(double distance) {
+        llMotor.setTargetPosition(
+                llMotor.getCurrentPosition() - (int)(distance * ENCODER_COUNTS_PER_INCH)
+        );
+        lrMotor.setTargetPosition(
+                lrMotor.getCurrentPosition() - (int)(distance * ENCODER_COUNTS_PER_INCH)
+        );
+        rlMotor.setTargetPosition(
+                rlMotor.getCurrentPosition() + (int)(distance * ENCODER_COUNTS_PER_INCH)
+        );
+        rrMotor.setTargetPosition(
+                rrMotor.getCurrentPosition() + (int)(distance * ENCODER_COUNTS_PER_INCH)
+        );
+        llMotor.setPower(MOTOR_MAX_SPEED);
+        lrMotor.setPower(MOTOR_MAX_SPEED);
+        rlMotor.setPower(MOTOR_MAX_SPEED);
+        rrMotor.setPower(MOTOR_MAX_SPEED);
+        llMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lrMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rlMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rrMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        moveForwardAuto = true;
     }
 }

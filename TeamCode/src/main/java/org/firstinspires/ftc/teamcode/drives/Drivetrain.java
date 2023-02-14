@@ -9,11 +9,16 @@ import org.firstinspires.ftc.teamcode.wrappers.IMU;
 public abstract class Drivetrain {
     // Drivetrain constants
     public static final double ANGLE_TOLERANCE = 1.5; // The angle, in degrees, that is considered "close enough"
-    public static final double ENCODER_COUNTS_PER_REV = 1023.568; // Single revolution encoder ticks
-    public static final double MOTOR_MAX_SPEED = 0.3;
+    public static final double ENCODER_COUNTS_PER_REV = 2047.136; // Single revolution encoder ticks
+
+    public static final double ENCODER_COUNTS_PER_INCH =  (ENCODER_COUNTS_PER_REV / 8) / (Math.PI * 4); // Encoder Ticks per Inch
+    public static final double MOTOR_MAX_SPEED = 0.4;
+    public static final double WHEEL_ROT_MULTIPLIER = 3;
 
     // Drivetrain instance-specific variables
     protected boolean turningToAngle = false;
+    protected boolean isFieldCentric = true;
+
     protected Telemetry telemetry;
     protected IMU imu;
 
@@ -25,7 +30,6 @@ public abstract class Drivetrain {
         return imu;
     }
 
-    protected boolean isFieldCentric = true;
     public void toggleFieldCentric() {
         isFieldCentric = !isFieldCentric;
     }
@@ -51,12 +55,6 @@ public abstract class Drivetrain {
      * @param m4 motor power level 4
      */
     public abstract void drive(double m1, double m2, double m3, double m4);
-
-    /**
-     * DEPRECEATED: There is no reason to use this
-     */
-    @Deprecated
-    public abstract void resetWheels();
 
     /**
      * @param target the absolute angle to move to
