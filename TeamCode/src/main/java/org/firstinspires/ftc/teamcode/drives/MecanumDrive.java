@@ -137,16 +137,6 @@ public class MecanumDrive extends Drivetrain {
     }
 
     @Override
-    public void resetWheels() {
-        drive(
-                -leftFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -leftBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV
-        );
-    }
-
-    @Override
     public void turnRobotToAngle(double target) {
         gyroLocked = true;
         gyroTarget = target;
