@@ -133,8 +133,6 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
-        if(gamepad2.a) {
-            drive.setDistanceToTravel(1);
-        }
+
     }
 }
