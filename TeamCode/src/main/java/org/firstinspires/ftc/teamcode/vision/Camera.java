@@ -20,7 +20,7 @@ import java.util.ListIterator;
 
 public class Camera {
     private static final String MODEL_ASSET = "signal.tflite";
-    // private static final String MODEL_FILE  = "/sdcard/FIRST/tflitemodels/CustomTeamModel.tflite";
+    private static final String MODEL_FILE  = "/sdcard/FIRST/tflitemodels/signal.tflite";
 
     private static final String[] LABELS = {
             "1 Bolt",
@@ -41,7 +41,13 @@ public class Camera {
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(
+                hardwareMap.appContext.getResources().getIdentifier(
+                        "cameraMonitorViewId",
+                        "id",
+                        hardwareMap.appContext.getPackageName()
+                )
+        );
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -57,11 +63,14 @@ public class Camera {
 
         // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
-        tfod.loadModelFromAsset(MODEL_ASSET, LABELS);
-        // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
+        try {
+            tfod.loadModelFromAsset(MODEL_ASSET, LABELS);
+        } catch(Exception e) {
+            tfod.loadModelFromFile(MODEL_FILE, LABELS);
+        }
     }
 
-    public List<Recognition> getRecognitions() {
+    public final List<Recognition> getRecognitions() {
         List<Recognition> rList = tfod.getUpdatedRecognitions();
         if(rList == null) {
             rList = Collections.emptyList();
