@@ -15,7 +15,7 @@ public class Deimos extends LinearOpMode {
     private SwerveDrive drive;
     private Camera camera;
     private double lastTime = 0.0d;
-    private ElapsedTime elapsedTime = new ElapsedTime();
+    private final ElapsedTime elapsedTime = new ElapsedTime();
     private boolean gp1aPressed = false;
 
     @Override
@@ -23,18 +23,16 @@ public class Deimos extends LinearOpMode {
         // Init (runs once)
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SwerveDrive(hardwareMap, null);
-        //camera = new Camera(hardwareMap, telemetry);
+        camera = new Camera(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
-        while(!opModeIsActive()) {
->>>>>>> b8e28d0 (Add FTCDashboard, Clean up drives, fix wrappers)
+        while(!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("G1LS", "(%f, %f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("G2LS", "(%f, %f)", gamepad2.left_stick_x, gamepad2.left_stick_y);
             telemetry.addData("G2RS", "(%f, %f)", gamepad2.right_stick_x, gamepad2.right_stick_y);
-            //List<Recognition> recognitionList = camera.getRecognitions();
-            //telemetry.addData("Recognition Count", recognitionList.size());
-            telemetry.update();
+            List<Recognition> recognitionList = camera.getRecognitions();
+            telemetry.addData("Recognition Count", recognitionList.size());
             telemetry.update();
         }
         // Start (runs once)
@@ -48,13 +46,14 @@ public class Deimos extends LinearOpMode {
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("UPS", 1 / (elapsedTime.seconds() - lastTime));
             lastTime = elapsedTime.seconds();
-            // Driver 1: Responsible for drivetrain and movement
-            driver1Inputs();
-            // Driver 2: Responsible for the subsystem attachment
-            driver2Inputs();
             //
-            //List<Recognition> recognitionList = camera.getRecognitions();
-            //telemetry.addData("Recognition Count", recognitionList.size());
+            // Driver 1: Responsible for drivetrain and movement
+            // driver1Inputs();
+            // Driver 2: Responsible for the subsystem attachment
+            // driver2Inputs();
+            //
+            List<Recognition> recognitionList = camera.getRecognitions();
+            telemetry.addData("Recognition Count", recognitionList.size());
             telemetry.update();
         }
         // Stop (runs once)
