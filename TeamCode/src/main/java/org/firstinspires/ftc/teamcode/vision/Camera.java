@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.vision;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -35,12 +36,8 @@ public class Camera {
 
 
     public Camera(HardwareMap hardwareMap, Telemetry telemetry) {
-
         this.telemetry = telemetry;
 
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(
                 hardwareMap.appContext.getResources().getIdentifier(
                         "cameraMonitorViewId",
@@ -50,10 +47,17 @@ public class Camera {
         );
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        try {
+            parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+            telemetry.addData("Camera", "Found");
+        } catch(Exception e) {
+            telemetry.addData("Camera", "Not found");
+        }
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        FtcDashboard.getInstance().startCameraStream(vuforia, 30);
 
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();
         tfodParameters.minResultConfidence = 0.75f;
@@ -64,17 +68,23 @@ public class Camera {
         // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
         try {
-            tfod.loadModelFromAsset(MODEL_ASSET, LABELS);
-        } catch(Exception e) {
             tfod.loadModelFromFile(MODEL_FILE, LABELS);
+            telemetry.addData("TFOD", "Loaded model from file");
+        } catch(Exception e) {
+            try {
+                tfod.loadModelFromAsset(MODEL_ASSET, LABELS);
+                telemetry.addData("TFOD", "Loaded model from asset");
+            } catch(Exception a) {
+                telemetry.addData("TFOD", "No model loaded");
+            }
         }
     }
 
     public final List<Recognition> getRecognitions() {
-        List<Recognition> rList = tfod.getUpdatedRecognitions();
-        if(rList == null) {
-            rList = Collections.emptyList();
-        }
+        List<Recognition> rList = tfod.getRecognitions();
+        //if(rList == null) {
+         //   rList = Collections.emptyList();
+        //}
         return rList;
     }
 }

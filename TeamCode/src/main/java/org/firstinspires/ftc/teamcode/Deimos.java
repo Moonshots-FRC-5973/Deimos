@@ -29,7 +29,7 @@ public class Deimos extends LinearOpMode {
         camera = new Camera(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
-        while(!opModeIsActive() && !isStopRequested()) {
+        while(opModeInInit()) {
             telemetry.addData("G1LS", "(%f, %f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("G2LS", "(%f, %f)", gamepad2.left_stick_x, gamepad2.left_stick_y);
@@ -39,6 +39,8 @@ public class Deimos extends LinearOpMode {
             telemetry.update();
         }
         // Start (runs once)
+        telemetry.addData("Status", "Started");
+        telemetry.update();
         elapsedTime.reset();
 
         // Main (runs until stop is pressed)
