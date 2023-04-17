@@ -34,8 +34,6 @@ public class Deimos extends LinearOpMode {
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("G2LS", "(%f, %f)", gamepad2.left_stick_x, gamepad2.left_stick_y);
             telemetry.addData("G2RS", "(%f, %f)", gamepad2.right_stick_x, gamepad2.right_stick_y);
-            List<Recognition> recognitionList = camera.getRecognitions();
-            telemetry.addData("Recognition Count", recognitionList.size());
             telemetry.update();
         }
         // Start (runs once)
@@ -55,8 +53,9 @@ public class Deimos extends LinearOpMode {
             // Driver 2: Responsible for the subsystem attachment
             // driver2Inputs();
             //
-            List<Recognition> recognitionList = camera.getRecognitions();
-            telemetry.addData("Recognition Count", recognitionList.size());
+
+
+
             telemetry.update();
         }
         // Stop (runs once)
