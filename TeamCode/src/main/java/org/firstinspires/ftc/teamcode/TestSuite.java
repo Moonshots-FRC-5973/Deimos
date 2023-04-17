@@ -25,10 +25,14 @@ public class TestSuite extends LinearOpMode {
 
 
         while(opModeInInit()) {
-            List<Recognition> rList = camera.getRecognitions();
             telemetry.addData("UPS", 1 / runtime.seconds());
             runtime.reset();
-            telemetry.addData("Recognitions", rList.toString());
+            telemetry.addData("CV Frame Count", camera.getFrameCount());
+            telemetry.addData("CV FPS", camera.getFps());
+            telemetry.addData("CV Frame Time", String.format("%.2f ms", camera.getTotalFrameTime()));
+            telemetry.addData("CV Pipeline Time", String.format("%.2f ms", camera.getPipelineTime()));
+            telemetry.addData("CV Overhead Time", String.format("%.2f ms", camera.getOverheadTime()));
+            telemetry.addData("CV Theoretical Max FPS", camera.getCurrentPipelineMaxFps());
             telemetry.update();
         }
     }
