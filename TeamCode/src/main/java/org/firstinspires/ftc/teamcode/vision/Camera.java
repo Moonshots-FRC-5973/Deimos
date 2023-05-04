@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -8,17 +10,37 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.function.Consumer;
+import org.firstinspires.ftc.robotcore.external.function.Continuation;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.CameraControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.FocusControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.PtzControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.WhiteBalanceControl;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibrationIdentity;
+import org.firstinspires.ftc.teamcode.vision.pipeline.CVPipeline;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
+import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+import org.openftc.easyopencv.PipelineRecordingParameters;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -81,7 +103,7 @@ public class Camera {
                         hardwareMap.appContext.getPackageName()
                 )
         );
-        pipeline = new CVPipeline();
+        pipeline = new CVPipeline(telemetry);
 
         webcam.setMillisecondsPermissionTimeout(5000);
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -102,24 +124,6 @@ public class Camera {
                 telemetry.addData("Camera", String.format("Failed to open webcam with code %x", errorCode));
             }
         });
-    }
 
-    private class CVPipeline extends OpenCvPipeline {
-        private boolean viewportPaused = false;
-        @Override
-        public Mat processFrame(Mat mat) {
-            return mat;
-        }
-
-        @Override
-        public void onViewportTapped() {
-            viewportPaused = !viewportPaused;
-
-            if (viewportPaused) {
-                webcam.pauseViewport();
-            } else {
-                webcam.resumeViewport();
-            }
-        }
     }
 }
