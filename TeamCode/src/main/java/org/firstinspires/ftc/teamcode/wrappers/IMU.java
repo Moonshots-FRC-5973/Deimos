@@ -106,4 +106,26 @@ public class IMU {
 
         return out;
     }
+
+    public double getXPosition() {
+        return imu.getPosition().x;
+    }
+
+    public double getYPosition() {
+        return imu.getPosition().y;
+    }
+
+    public double getZPosition() {
+        return imu.getPosition().z;
+    }
+
+    public double[] getPosition() {
+        double[] out = new double[3];
+
+        out[0] = getXPosition();
+        out[1] = getYPosition();
+        out[2] = getZPosition();
+
+        return out;
+    }
 }
