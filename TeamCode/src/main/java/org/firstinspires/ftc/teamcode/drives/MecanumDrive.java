@@ -146,22 +146,6 @@ public class MecanumDrive extends Drivetrain {
 
     @Override
     public void turnRobotToAngle(double target) {
-        gyroLocked = true;
-        gyroTarget = target;
-        // Get the error. Positive means we need to rotate to the left
-        double error = gyroTarget - imu.getZAngle();
-        // Ensure we don't move farther than one rotation
-        error %= 360;
-        // If we are within the requested tolerance (Constants.DRIVE_ANGLE_TOLERANCE), we should stop turning
-        if(Math.abs(error) <= ANGLE_TOLERANCE) {
-            stop();
-            turningToAngle = false;
-            return;
-        } else {
-            turningToAngle = true;
-        }
-        // As we approach the angle, we need to slow down the rotation
-        double power = Range.clip(-error / 360, -0.5, 0.5);
-        drive(power, power, -power, -power);
+
     }
 }

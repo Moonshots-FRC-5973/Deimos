@@ -2,20 +2,20 @@ package org.firstinspires.ftc.teamcode.drives;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.wrappers.IMU;
 
 public abstract class Drivetrain {
     // Drivetrain constants
     public static final double ANGLE_TOLERANCE = 1.5; // The angle, in degrees, that is considered "close enough"
-    public static final double ENCODER_COUNTS_PER_REV = 2047.136; // Single revolution encoder ticks
-    public static final double ENCODER_COUNTS_PER_INCH =  260.649; // Encoder Ticks per Inch
+    public static final double DISTANCE_TOLERANCE = 1.0; // The distance, in centimeters, that is considered "close enough"
     public static final double MOTOR_MAX_SPEED = 0.4;
-    public static final double WHEEL_ROT_MULTIPLIER = 3;
+    public static final double SWERVE_ENCODER_COUNTS_PER_REV = 2047.136; // Single revolution encoder ticks
+    public static final double SWERVE_ENCODER_COUNTS_PER_INCH =  260.649; // Encoder Ticks per Inch
+    public static final double SWERVE_WHEEL_ROT_MULTIPLIER = 3;
 
     // Drivetrain instance-specific variables
-    protected boolean turningToAngle = false;
     protected boolean isFieldCentric = true;
-
     protected Telemetry telemetry;
     protected IMU imu;
 
@@ -56,6 +56,7 @@ public abstract class Drivetrain {
     protected abstract void drive(double m1, double m2, double m3, double m4);
 
     /**
+     * @brief Blocking call to a robot rotation
      * @param target the absolute angle to move to
      */
     public abstract void turnRobotToAngle(double target);
@@ -67,7 +68,7 @@ public abstract class Drivetrain {
     public void turnRobotByDegree(double target) { turnRobotToAngle(imu.getZAngle() + target); }
 
     /**
-     * Stops the drive from moving
+     * @brief Stops the drive from moving
      */
     public void stop() {
         drive(0.0d, 0.0d, 0.0d, 0.0d);

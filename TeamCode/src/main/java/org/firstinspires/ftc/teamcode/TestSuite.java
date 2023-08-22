@@ -118,4 +118,22 @@ public class TestSuite extends LinearOpMode {
 
 
     }
+
+ */
+    @Override
+    public void runOpMode() throws InterruptedException {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        SwerveDrive drive = new SwerveDrive(hardwareMap, telemetry);
+
+        while(opModeInInit()) {
+            telemetry.addData("UPS", 1 / runtime.seconds());
+            runtime.reset();
+            IMU imu = drive.getIMU();
+            telemetry.addData("IMU Angle", imu.getAngle().toString());
+            //telemetry.addData("IMU Acceleration", imu.getAcceleration());
+            telemetry.addData("IMU Velocity", imu.getVelocity().toString());
+            telemetry.addData("IMU Position", imu.getPosition().toString());
+            telemetry.update();
+        }
+    }
 }
