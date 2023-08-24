@@ -8,7 +8,7 @@ public abstract class Drivetrain {
     // Drivetrain constants
     public static final double ANGLE_TOLERANCE = 1.5; // The angle, in degrees, that is considered "close enough"
     public static final double DISTANCE_TOLERANCE = 1.0; // The distance, in centimeters, that is considered "close enough"
-    public static final double MOTOR_MAX_SPEED = 0.4;
+    public static final double MOTOR_MAX_SPEED = 0.75;
     public static final double SWERVE_ENCODER_COUNTS_PER_REV = 2047.136; // Single revolution encoder ticks
     public static final double SWERVE_ENCODER_COUNTS_PER_INCH =  260.649; // Encoder Ticks per Inch
     public static final double SWERVE_WHEEL_ROT_MULTIPLIER = 3;
@@ -37,8 +37,8 @@ public abstract class Drivetrain {
         return isFieldCentric;
     }
 
-    public Drivetrain(HardwareMap hardwareMap, Telemetry telemetry) {
-        this.imu = new IMU(hardwareMap);
+    public Drivetrain(HardwareMap hardwareMap, Telemetry telemetry, com.qualcomm.robotcore.hardware.IMU.Parameters parameters) {
+        this.imu = new IMU(hardwareMap, parameters);
         this.telemetry = telemetry;
     }
 
@@ -61,12 +61,6 @@ public abstract class Drivetrain {
     /**
      * @brief Blocking call to a robot rotation
     public abstract void drive(double m1, double m2, double m3, double m4);
-
-    /**
-     * DEPRECEATED: There is no reason to use this
-     */
-    @Deprecated
-    public abstract void resetWheels();
 
     /**
      * @param target the absolute angle to move to
