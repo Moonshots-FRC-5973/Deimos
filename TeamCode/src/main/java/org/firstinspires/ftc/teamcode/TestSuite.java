@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.drives.Drivetrain;
+import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
 import org.firstinspires.ftc.teamcode.vision.Camera;
 import org.firstinspires.ftc.teamcode.wrappers.IMU;
@@ -20,41 +22,58 @@ public class TestSuite extends LinearOpMode {
     private Camera camera;
     private long time;
     private ElapsedTime runtime = new ElapsedTime();
-/*
-    @Override
-    public void runOpMode() throws InterruptedException {
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        camera = new Camera( hardwareMap, telemetry);
+    private boolean gamepad1APressed = false;
 
-        while(opModeInInit()) {
-            telemetry.addData("UPS", 1 / runtime.seconds());
-            runtime.reset();
-            telemetry.addData("CV Frame Count", camera.getFrameCount());
-            telemetry.addData("CV FPS", camera.getFps());
-            telemetry.addData("CV Frame Time", String.format("%.2f ms", camera.getTotalFrameTime()));
-            telemetry.addData("CV Pipeline Time", String.format("%.2f ms", camera.getPipelineTime()));
-            telemetry.addData("CV Overhead Time", String.format("%.2f ms", camera.getOverheadTime()));
-            telemetry.addData("CV Theoretical Max FPS", camera.getCurrentPipelineMaxFps());
-            telemetry.addData("CV Viewport Enabled", camera.getPipeline().isViewportPaused());
-            telemetry.update();
-        }
+    private enum DisplayMode {
+        IMU_DISPLAY,
+        SENSOR_DISPLAY,
+        CV_DISPLAY,
+        HARDWARE_DISPLAY,
     }
 
- */
+    private DisplayMode mode = DisplayMode.IMU_DISPLAY;
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        SwerveDrive drive = new SwerveDrive(hardwareMap, telemetry);
+        Drivetrain drive;
+        try {
+            drive = new MecanumDrive(hardwareMap, telemetry);
+        } catch (Exception e) {
+            drive = new SwerveDrive(hardwareMap, telemetry);
+        }
 
         while(opModeInInit()) {
             telemetry.addData("UPS", 1 / runtime.seconds());
             runtime.reset();
-            IMU imu = drive.getIMU();
-            telemetry.addData("IMU Angle", imu.getAngle().toString());
-            //telemetry.addData("IMU Acceleration", imu.getAcceleration());
-            telemetry.addData("IMU Velocity", imu.getVelocity().toString());
-            telemetry.addData("IMU Position", imu.getPosition().toString());
+            switch(mode) {
+                case IMU_DISPLAY:
+                    if(gamepad1.a && !gamepad1APressed && !gamepad1.start) {
+                        mode = DisplayMode.SENSOR_DISPLAY;
+                    }
+                    IMU imu = drive.getIMU();
+                    telemetry.addData("IMU Angle", String.format("(%.3d, %.3d, %.3d)",
+                            imu.getXAngle(), imu.getYAngle(), imu.getZAngle()));
+                    //telemetry.addData("IMU Acceleration", "(" + imu.getXAcceleration() +
+                    //        ", " + imu.getYAcceleration() + ", " + imu.getZAcceleration() + ")");
+                    telemetry.addData("IMU Velocity", String.format("(%.3f, %.3f, %.3f)",
+                            imu.getXVelocity(), imu.getYVelocity(), imu.getZVelocity()));
+                    telemetry.addData("IMU Position", String.format("(%.3f, %.3f, %.3f)",
+                            imu.getXPosition(), imu.getYPosition(), imu.getZPosition()));
+                    break;
+                case SENSOR_DISPLAY:
+                    if(gamepad1.a && !gamepad1APressed && !gamepad1.start) {
+                        mode = DisplayMode.IMU_DISPLAY;
+                    }
+                    telemetry.addData("Info", "No known sensors set up");
+                    break;
+                case CV_DISPLAY:
+                    break;
+                case HARDWARE_DISPLAY:
+                    break;
+            }
             telemetry.update();
+            gamepad1APressed = gamepad1.a;
         }
     }
 }

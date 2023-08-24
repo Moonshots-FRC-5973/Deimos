@@ -1,45 +1,53 @@
 package org.firstinspires.ftc.teamcode.drives;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.teamcode.Constants;
 
 public class MecanumDrive extends Drivetrain {
 
     // HARDWARE
-    private DcMotor leftFrontDrive;
-    private DcMotor leftBackDrive;
-    private DcMotor rightFrontDrive;
-    private DcMotor rightBackDrive;
+    private final DcMotor leftFrontDrive;
+    private final DcMotor leftBackDrive;
+    private final DcMotor rightFrontDrive;
+    private final DcMotor rightBackDrive;
 
     // GYRO TRACKERS
     private double gyroTarget;
 
     // BOOLEAN TOGGLES
     private boolean gyroLocked = false;
-    private boolean useGyro = true;
 
     public MecanumDrive(HardwareMap hardwareMap, Telemetry telemetry) {
-        this(hardwareMap, telemetry, true);
-    }
+        super(hardwareMap, telemetry, new IMU.Parameters(
+            new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+            )
+        ));
 
-    public MecanumDrive(HardwareMap hardwareMap, Telemetry telemetry, boolean gyroLocked) {
-        super(hardwareMap, telemetry);
-
-        this.useGyro = gyroLocked;
         // CONFIGURE HARDWARE
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_motor_drive");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "flMotor"); // Florida Motor
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_motor_drive");
+        leftFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        leftBackDrive = hardwareMap.get(DcMotor.class, "blMotor");
         leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_motor_drive");
+        leftBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frMotor"); // French Motor
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightBackDrive = hardwareMap.get(DcMotor.class,"right_back_motor_drive");
+        rightFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        rightBackDrive = hardwareMap.get(DcMotor.class,"brMotor"); // Brazilian Motor
         rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
     }
@@ -65,7 +73,7 @@ public class MecanumDrive extends Drivetrain {
         // ROTATE
         // RIGHT STICK DISABLES FORWARD/STRAFE
         if (Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
-            drive(turn, turn, -turn, -turn);
+            drive(-turn, turn, -turn, turn);
             gyroLocked = false;
             return;
         }
@@ -126,10 +134,10 @@ public class MecanumDrive extends Drivetrain {
 
     /**
      * Execute motion on the drivetrain
-     * @param leftFront
-     * @param leftRear
-     * @param rightFront
-     * @param rightRear
+     * @param leftFront The power to give the left front motor
+     * @param leftRear The power to give the left rear motor
+     * @param rightFront The power to give the right front motor
+     * @param rightRear The power to give the right rear motor
      */
     public void drive(double leftFront, double leftRear, double rightFront, double rightRear) {
         if(telemetry != null) {
@@ -143,16 +151,6 @@ public class MecanumDrive extends Drivetrain {
         leftBackDrive.setPower(Range.clip(leftRear, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
         rightFrontDrive.setPower(Range.clip(rightFront, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
         rightBackDrive.setPower(Range.clip(rightRear, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
-    }
-
-    @Override
-    public void resetWheels() {
-        drive(
-                -leftFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -leftBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV
-        );
     }
 
     @Override
@@ -176,18 +174,5 @@ public class MecanumDrive extends Drivetrain {
         // As we approach the angle, we need to slow down the rotation
         double power = Range.clip(-error / 360, -0.5, 0.5);
         drive(power, power, -power, -power);
-    }
-
-    public void disableGyroLock(){
-        gyroLocked = false;
-    }
-
-    public void setGyroLock(){
-        gyroTarget = imu.getZAngle();
-        gyroLocked = true;
-    }
-
-    public void turnToGyroLock() {
-        turnRobotToAngle(gyroTarget);
     }
 }
