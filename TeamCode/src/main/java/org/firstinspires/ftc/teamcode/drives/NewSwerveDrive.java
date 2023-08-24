@@ -14,7 +14,7 @@ public class NewSwerveDrive extends Drivetrain {
 
 
     public NewSwerveDrive(HardwareMap hardwareMap, Telemetry telemetry) {
-        super(hardwareMap, telemetry);
+        super(hardwareMap, telemetry, null);
         llMotor = hardwareMap.get(DcMotor.class, "swerveLLMotor");
         lrMotor = hardwareMap.get(DcMotor.class, "swerveLRMotor");
         rlMotor = hardwareMap.get(DcMotor.class, "swerveRLMotor");

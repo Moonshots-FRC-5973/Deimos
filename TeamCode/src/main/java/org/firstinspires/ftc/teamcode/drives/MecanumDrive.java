@@ -37,17 +37,11 @@ public class MecanumDrive extends Drivetrain {
         // CONFIGURE HARDWARE
         leftFrontDrive = hardwareMap.get(DcMotor.class, "flMotor"); // Florida Motor
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        leftBackDrive = hardwareMap.get(DcMotor.class, "blMotor"); // Saint Barthélemy Motor
+        leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_motor_drive");
         leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "frMotor"); // French Motor
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_motor_drive");
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        rightBackDrive = hardwareMap.get(DcMotor.class,"brMotor"); // Brazilian Motor
+        rightBackDrive = hardwareMap.get(DcMotor.class,"right_back_motor_drive");
         rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
     }
@@ -73,7 +67,7 @@ public class MecanumDrive extends Drivetrain {
         // ROTATE
         // RIGHT STICK DISABLES FORWARD/STRAFE
         if (Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
-            drive(turn, -turn, -turn, turn);
+            drive(turn, turn, -turn, -turn);
             gyroLocked = false;
             return;
         }
@@ -154,16 +148,6 @@ public class MecanumDrive extends Drivetrain {
     }
 
     @Override
-    public void resetWheels() {
-        drive(
-                -leftFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -leftBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightFrontDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV,
-                -rightBackDrive.getCurrentPosition() / ENCODER_COUNTS_PER_REV
-        );
-    }
-
-    @Override
     public void turnRobotToAngle(double target) {
         gyroLocked = true;
         gyroTarget = target;
@@ -184,18 +168,5 @@ public class MecanumDrive extends Drivetrain {
         // As we approach the angle, we need to slow down the rotation
         double power = Range.clip(-error / 360, -0.5, 0.5);
         drive(power, power, -power, -power);
-    }
-
-    public void disableGyroLock(){
-        gyroLocked = false;
-    }
-
-    public void setGyroLock(){
-        gyroTarget = imu.getZAngle();
-        gyroLocked = true;
-    }
-
-    public void turnToGyroLock() {
-        turnRobotToAngle(gyroTarget);
     }
 }

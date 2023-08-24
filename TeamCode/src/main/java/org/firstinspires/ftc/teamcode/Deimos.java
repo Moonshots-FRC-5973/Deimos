@@ -12,17 +12,19 @@ import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 
 @TeleOp(name="Deimos")
 public class Deimos extends LinearOpMode {
-    private SwerveDrive drive;
-    private Camera camera;
+    //private SwerveDrive drive;
+    private MecanumDrive drive;
     private double lastTime = 0.0d;
     private final ElapsedTime elapsedTime = new ElapsedTime();
+
+    private boolean gp1aPressed = false;
     
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         // Init (runs once)
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        drive = new SwerveDrive(hardwareMap, null);
-        camera = new Camera(hardwareMap, telemetry);
+        //drive = new SwerveDrive(hardwareMap, null);
+        drive = new MecanumDrive(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
         while(opModeInInit()) {
@@ -45,9 +47,9 @@ public class Deimos extends LinearOpMode {
             lastTime = elapsedTime.seconds();
             //
             // Driver 1: Responsible for drivetrain and movement
-            // driver1Inputs();
+            driver1Inputs();
             // Driver 2: Responsible for the subsystem attachment
-            // driver2Inputs();
+            driver2Inputs();
             //
 
 
@@ -101,16 +103,16 @@ public class Deimos extends LinearOpMode {
         }
         else {
             telemetry.addData("Drive", "Listening to LSX, LSY, RSX");
-            double forward = -gamepad1.left_stick_y; // flight stick inversion
+            double forward = gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
-            double rotate = gamepad1.right_stick_x;
+            double turn = gamepad1.right_stick_x;
 
             // DEADZONES
             if (Math.abs(forward) <= Constants.INPUT_THRESHOLD) forward = 0.0d;
             if (Math.abs(strafe) <= Constants.INPUT_THRESHOLD)  strafe = 0.0d;
             if (Math.abs(turn) <= Constants.INPUT_THRESHOLD) turn = 0.0d;
 
-            drive.drive(-forward, -strafe, -rotate);
+            drive.drive(forward, strafe, turn);
         }
 
         if(gamepad1.a && !gp1aPressed && !gamepad1.start) {
