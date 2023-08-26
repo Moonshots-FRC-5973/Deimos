@@ -17,23 +17,19 @@ public class SwerveDrive extends Drivetrain {
     public final DcMotor rrMotor; // + Power = right wheel turning left
     private boolean fieldCentric = true;
 
-    public int getLeftEncodersDifference() {
-        return llMotor.getCurrentPosition() - lrMotor.getCurrentPosition();
-    }
-    public double getLeftWheelAngle() {
-        double angle = (360 * (getLeftEncodersDifference() % SWERVE_ENCODER_COUNTS_PER_REV) / SWERVE_ENCODER_COUNTS_PER_REV);
-        if(fieldCentric) return angle + getIMU().getZAngle();
-        return angle;
-    }
-    public int getRightEncodersDifference() {
-        return rlMotor.getCurrentPosition() - rrMotor.getCurrentPosition();
-    }
-    public double getRightWheelAngle() {
-        double angle = (360 * (getRightEncodersDifference() % SWERVE_ENCODER_COUNTS_PER_REV) / SWERVE_ENCODER_COUNTS_PER_REV);
-        if (fieldCentric) return angle + getIMU().getZAngle();
+    /**
+     * Returns the wheel angle
+     * @param left The left motor for the wheel
+     * @param right the right motor for the wheel
+     * @return The angle of the wheel made up of the left and right motors
+     */
+    private double getWheelAngle(DcMotor left, DcMotor right) {
+        double angle = 360 * ((left.getCurrentPosition() - right.getCurrentPosition()) / SWERVE_ENCODER_COUNTS_PER_REV ) % SWERVE_ENCODER_COUNTS_PER_REV;
+        if(getFieldCentric()) return angle + getIMU().getZAngle();
         return angle;
     }
 
+    //Field Centric related Methods
     public void makeRobotCentric() {
         fieldCentric = false;
     }
@@ -61,8 +57,8 @@ public class SwerveDrive extends Drivetrain {
     @Override
     public void drive(double forward, double strafe, double turn) {
         // Useful Variables for later
-        double rightWheelAngle = getRightWheelAngle();
-        double leftWheelAngle = getLeftWheelAngle();
+        double rightWheelAngle = getWheelAngle(rlMotor, rrMotor);
+        double leftWheelAngle = getWheelAngle(llMotor, lrMotor);
         double leftRotPower, rightRotPower;
         double multiplier = 1;
 
@@ -73,6 +69,7 @@ public class SwerveDrive extends Drivetrain {
             if(Math.abs(leftWheelAngle) >= 90) {
                 multiplier = -1;
             }
+
             // multiplier flips rotation direction; Rest calculates how much rotation we need
             // https://www.geogebra.org/calculator/ucaxvmtw
             leftRotPower = SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-leftWheelAngle));
@@ -128,6 +125,7 @@ public class SwerveDrive extends Drivetrain {
         if(Math.abs(leftAngleDiff) <= ANGLE_TOLERANCE) {
             leftAngleDiff = 0.0d;
         }
+
         if(Math.abs(rightAngleDiff) <= ANGLE_TOLERANCE) {
             rightAngleDiff = 0.0d;
         }
@@ -145,6 +143,7 @@ public class SwerveDrive extends Drivetrain {
         leftRotPower = multiplier * SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(leftAngleDiff));
         llPower += leftRotPower;
         lrPower -= leftRotPower;
+
         rightRotPower = multiplier * SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(rightAngleDiff));
         rlPower += rightRotPower;
         rrPower -= rightRotPower;
@@ -163,18 +162,21 @@ public class SwerveDrive extends Drivetrain {
 
     @Override
     public void turnRobotToAngle(double target) {
-        double rightWheelAngle = (360 * ((rlMotor.getCurrentPosition() - rrMotor.getCurrentPosition()) % SWERVE_ENCODER_COUNTS_PER_REV) / SWERVE_ENCODER_COUNTS_PER_REV);
-        double leftWheelAngle = (360 * ((llMotor.getCurrentPosition() - lrMotor.getCurrentPosition()) % SWERVE_ENCODER_COUNTS_PER_REV) / SWERVE_ENCODER_COUNTS_PER_REV);
+        double rightWheelAngle = getWheelAngle(rlMotor, rrMotor);
+        double leftWheelAngle = getWheelAngle(llMotor, lrMotor);
         double multiplier = 1;
         double leftRotPower, rightRotPower;
+
         // If Wheel's forward face is away from the 0 mark, reverse rotation
         if(Math.abs(leftWheelAngle) >= 90) {
             multiplier = -1;
         }
+
         // multiplier flips rotation direction; Rest calculates how much rotation we need
         // https://www.geogebra.org/calculator/ucaxvmtw
         leftRotPower = multiplier * SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-leftWheelAngle));
         rightRotPower = multiplier * SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-rightWheelAngle));
+
         drive(
                 -(MOTOR_MAX_SPEED * multiplier) + leftRotPower,
                 -(MOTOR_MAX_SPEED * multiplier) - leftRotPower,
@@ -187,15 +189,19 @@ public class SwerveDrive extends Drivetrain {
         llMotor.setTargetPosition(
                 llMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
         );
+
         lrMotor.setTargetPosition(
                 lrMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
         );
+
         rlMotor.setTargetPosition(
                 rlMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
         );
+
         rrMotor.setTargetPosition(
                 rrMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
         );
+        
         llMotor.setPower(MOTOR_MAX_SPEED);
         lrMotor.setPower(MOTOR_MAX_SPEED);
         rlMotor.setPower(MOTOR_MAX_SPEED);
