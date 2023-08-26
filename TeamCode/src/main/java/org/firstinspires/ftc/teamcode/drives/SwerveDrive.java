@@ -17,25 +17,15 @@ public class SwerveDrive extends Drivetrain {
     public final DcMotor rrMotor; // + Power = right wheel turning left
     private boolean fieldCentric = true;
 
-    //Encoder Methods
-    public int getLeftEncodersDifference() {
-        return llMotor.getCurrentPosition() - lrMotor.getCurrentPosition();
-    }
-
-    public int getRightEncodersDifference() {
-        return rlMotor.getCurrentPosition() - rrMotor.getCurrentPosition();
-    }
-
-    //Wheel Methods 
-    public double getLeftWheelAngle() {
-        double angle = (360 * (getLeftEncodersDifference() % SWERVE_ENCODER_COUNTS_PER_REV) / SWERVE_ENCODER_COUNTS_PER_REV);
-        if(fieldCentric) return angle + getIMU().getZAngle();
-        return angle;
-    }
-    
-    public double getRightWheelAngle() {
-        double angle = (360 * (getRightEncodersDifference() % SWERVE_ENCODER_COUNTS_PER_REV) / SWERVE_ENCODER_COUNTS_PER_REV);
-        if (fieldCentric) return angle + getIMU().getZAngle();
+    /**
+     * Returns the wheel angle
+     * @param left The left motor for the wheel
+     * @param right the right motor for the wheel
+     * @return The angle of the wheel made up of the left and right motors
+     */
+    private double getWheelAngle(DcMotor left, DcMotor right) {
+        double angle = 360 * ((left.getCurrentPosition() - right.getCurrentPosition()) / SWERVE_ENCODER_COUNTS_PER_REV ) % SWERVE_ENCODER_COUNTS_PER_REV;
+        if(getFieldCentric()) return angle + getIMU().getZAngle();
         return angle;
     }
 
@@ -67,8 +57,8 @@ public class SwerveDrive extends Drivetrain {
     @Override
     public void drive(double forward, double strafe, double turn) {
         // Useful Variables for later
-        double rightWheelAngle = getRightWheelAngle();
-        double leftWheelAngle = getLeftWheelAngle();
+        double rightWheelAngle = getWheelAngle(rlMotor, rrMotor);
+        double leftWheelAngle = getWheelAngle(llMotor, lrMotor);
         double leftRotPower, rightRotPower;
         double multiplier = 1;
 
