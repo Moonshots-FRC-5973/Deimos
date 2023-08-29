@@ -16,7 +16,6 @@ public class IMU {
     com.qualcomm.robotcore.hardware.IMU imu;
 
     public IMU(HardwareMap hardwareMap, com.qualcomm.robotcore.hardware.IMU.Parameters parameters) {
-
         imu = hardwareMap.get(com.qualcomm.robotcore.hardware.IMU.class, NAME);
         imu.initialize(parameters);
     }
