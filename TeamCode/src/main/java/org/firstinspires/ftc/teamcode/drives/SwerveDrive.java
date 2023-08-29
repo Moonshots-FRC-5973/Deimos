@@ -103,6 +103,7 @@ public class SwerveDrive extends Drivetrain {
         double rlPower = radius;
         double rrPower = radius;
 
+        //checks the target angle and passes it to the telemetry
         if(telemetry != null) {
             telemetry.addData("Target Angle", targetAngle);
         }
@@ -166,6 +167,7 @@ public class SwerveDrive extends Drivetrain {
         lrMotor.setPower(MOTOR_MAX_SPEED);
         rlMotor.setPower(MOTOR_MAX_SPEED);
         rrMotor.setPower(MOTOR_MAX_SPEED);
+
         llMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lrMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rlMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
