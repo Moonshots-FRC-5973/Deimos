@@ -103,7 +103,6 @@ public class SwerveDrive extends Drivetrain {
         double rlPower = radius;
         double rrPower = radius;
 
-
         if(telemetry != null) {
             telemetry.addData("Target Angle", targetAngle);
         }
