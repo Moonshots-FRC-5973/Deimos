@@ -4,7 +4,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -24,7 +23,7 @@ public class SwerveDrive extends Drivetrain {
      */
     private double getWheelAngle(DcMotor left, DcMotor right) {
         double angle = 360 * ((left.getCurrentPosition() - right.getCurrentPosition()) / SWERVE_ENCODER_COUNTS_PER_REV ) % SWERVE_ENCODER_COUNTS_PER_REV;
-        if(getFieldCentric()) return angle + getIMU().getZAngle();
+        if(isFieldCentric) return angle + imu.getZAngle();
         return angle;
     }
 
@@ -74,8 +73,8 @@ public class SwerveDrive extends Drivetrain {
         // -- ROTATION --
         if(Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
             drive(
-                    leftRotPower - (multiplier * turn),
-                    -leftRotPower - (multiplier * turn),
+                    leftRotPower + (multiplier * turn),
+                    -leftRotPower + (multiplier * turn),
                     rightRotPower - (multiplier * turn),
                     -rightRotPower - (multiplier * turn));
             return;
@@ -108,8 +107,6 @@ public class SwerveDrive extends Drivetrain {
         if(telemetry != null) {
             telemetry.addData("Target Angle", targetAngle);
         }
-
-
 
         llPower *= multiplier;
         lrPower *= multiplier;

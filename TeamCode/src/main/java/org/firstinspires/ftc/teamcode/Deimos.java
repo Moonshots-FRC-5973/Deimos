@@ -120,6 +120,7 @@ public class Deimos extends LinearOpMode {
             drive.toggleFieldCentric();
         }
 
+        // TODO: See if this can be moved into the drivetrain files or removed
         if(drive.getFieldCentric())
             telemetry.addData("Mode", "Field Centric");
         else
