@@ -30,7 +30,7 @@ public class MecanumDrive extends Drivetrain {
         super(hardwareMap, telemetry, new IMU.Parameters(
             new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT
             )
         ));
 
@@ -60,7 +60,7 @@ public class MecanumDrive extends Drivetrain {
      */
     public void drive(double forward, double strafe, double turn) {
         if(telemetry != null) {
-            telemetry.addData("IMU", "Accel(%.3f, %.3f, %.3f)", imu.getXVelocity(), imu.getYVelocity(), imu.getZVelocity());
+            telemetry.addData("IMU", "Velocity(%.3f, %.3f, %.3f)", imu.getXVelocity(), imu.getYVelocity(), imu.getZVelocity());
         }
 
         if (isFieldCentric) {
@@ -116,12 +116,6 @@ public class MecanumDrive extends Drivetrain {
         }
         // END GYRO-LOCK
         // --------------------
-
-        if(telemetry != null) {
-            telemetry.addData("Gyro Locked", gyroLocked);
-            telemetry.addData("Gyro Target", gyroTarget);
-            telemetry.addData("Error", gyroError);
-        }
 
         drive(
                 forward + strafe + frontLeftBoost,

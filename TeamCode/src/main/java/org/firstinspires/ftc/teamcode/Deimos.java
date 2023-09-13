@@ -13,8 +13,7 @@ import org.firstinspires.ftc.teamcode.vision.Camera;
 
 @TeleOp(name="Deimos")
 public class Deimos extends LinearOpMode {
-    //private SwerveDrive drive;
-    private MecanumDrive drive;
+    private SwerveDrive drive;
     private double lastTime = 0.0d;
     private final ElapsedTime elapsedTime = new ElapsedTime();
 
@@ -24,8 +23,7 @@ public class Deimos extends LinearOpMode {
     public void runOpMode() {
         // Init (runs once)
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        //drive = new SwerveDrive(hardwareMap, null);
-        drive = new MecanumDrive(hardwareMap, telemetry);
+        drive = new SwerveDrive(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
         while(opModeInInit()) {
@@ -42,8 +40,8 @@ public class Deimos extends LinearOpMode {
 
         // Main (runs until stop is pressed)
         while(opModeIsActive()) {
-            telemetry.addData("G1LS", "(%f, %f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
-            telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
+            //telemetry.addData("G1LS", "(%f, %f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
+            //telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
             telemetry.addData("UPS", 1 / (elapsedTime.seconds() - lastTime));
             lastTime = elapsedTime.seconds();
             //
@@ -51,9 +49,6 @@ public class Deimos extends LinearOpMode {
             driver1Inputs();
             // Driver 2: Responsible for the subsystem attachment
             driver2Inputs();
-            //
-
-
 
             telemetry.update();
         }
@@ -113,6 +108,8 @@ public class Deimos extends LinearOpMode {
             if (Math.abs(strafe) <= Constants.INPUT_THRESHOLD)  strafe = 0.0d;
             if (Math.abs(turn) <= Constants.INPUT_THRESHOLD) turn = 0.0d;
 
+            telemetry.addData("Inputs", "(%.2f, %.2f, %.2f)", forward, strafe, turn);
+
             drive.drive(forward, strafe, turn);
         }
 
@@ -120,6 +117,7 @@ public class Deimos extends LinearOpMode {
             drive.toggleFieldCentric();
         }
 
+        // TODO: See if this can be moved into the drivetrain files or removed
         if(drive.getFieldCentric())
             telemetry.addData("Mode", "Field Centric");
         else
