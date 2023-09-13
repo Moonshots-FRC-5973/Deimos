@@ -116,6 +116,11 @@ public class SwerveDrive extends Drivetrain {
         rlPower += getWheelRotationPower(rlMotor, rlMotor, targetAngle);
         rrPower -= getWheelRotationPower(rlMotor, rrMotor, targetAngle);
 
+        llMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rlMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         llPower *= multiplier;
         lrPower *= multiplier;
         rlPower *= multiplier;
@@ -172,6 +177,7 @@ public class SwerveDrive extends Drivetrain {
         lrMotor.setPower(MOTOR_MAX_SPEED);
         rlMotor.setPower(MOTOR_MAX_SPEED);
         rrMotor.setPower(MOTOR_MAX_SPEED);
+
         llMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lrMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rlMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
