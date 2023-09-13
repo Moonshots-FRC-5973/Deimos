@@ -24,6 +24,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibrationIdentity;
 import org.firstinspires.ftc.teamcode.vision.pipeline.CVPipeline;
+import org.firstinspires.ftc.teamcode.vision.pipeline.Pipeline;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -62,9 +63,9 @@ public class Camera {
     private TFObjectDetector tfod;
     private OpenCvWebcam webcam;
 
-    private CVPipeline pipeline;
+    private Pipeline pipeline;
 
-    public CVPipeline getPipeline() {
+    public Pipeline getPipeline() {
         return pipeline;
     }
 
@@ -103,7 +104,7 @@ public class Camera {
                         hardwareMap.appContext.getPackageName()
                 )
         );
-        pipeline = new CVPipeline(telemetry);
+        pipeline = new Pipeline(telemetry);
 
         webcam.setMillisecondsPermissionTimeout(5000);
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()

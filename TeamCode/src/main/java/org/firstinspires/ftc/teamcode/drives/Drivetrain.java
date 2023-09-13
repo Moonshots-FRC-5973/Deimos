@@ -6,11 +6,12 @@ import org.firstinspires.ftc.teamcode.wrappers.IMU;
 
 public abstract class Drivetrain {
     // Drivetrain constants
-    public static final double ANGLE_TOLERANCE = 1.5; // The angle, in degrees, that is considered "close enough"
-    public static final double MOTOR_MAX_SPEED = 0.4d;
+    public static final double ANGLE_TOLERANCE = 30; // The angle, in degrees, that is considered "close enough"
+    public static final double MOTOR_MAX_SPEED = 0.3d;
     public static final double SWERVE_ENCODER_COUNTS_PER_REV = 2047.136; // Single revolution encoder ticks
     public static final double SWERVE_ENCODER_COUNTS_PER_INCH =  260.649; // Encoder Ticks per Inch
-    public static final double SWERVE_WHEEL_ROT_MULTIPLIER = 3;
+    public static final double SWERVE_WHEEL_ROT_MULTIPLIER = 1;
+    public static final double SWERVE_FORWARD_SPEED_MULTIPLIER = 0.5;
 
     // Drivetrain instance-specific variables
     protected boolean isFieldCentric = true;
@@ -46,7 +47,7 @@ public abstract class Drivetrain {
      * @param m3 motor power level 3
      * @param m4 motor power level 4
      */
-    protected abstract void drive(double m1, double m2, double m3, double m4);
+    public abstract void drive(double m1, double m2, double m3, double m4);
 
     /**
      * Blocking call to a robot rotation
