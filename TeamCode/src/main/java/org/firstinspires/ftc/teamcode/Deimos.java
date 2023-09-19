@@ -12,7 +12,13 @@ import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 
 @TeleOp(name="Deimos")
 public class Deimos extends LinearOpMode {
+/*
+    <<<<<<< Updated upstream
     //private SwerveDrive drive;
+=======
+>>>>>>> Stashed changes
+
+ */
     private MecanumDrive drive;
     private double lastTime = 0.0d;
     private final ElapsedTime elapsedTime = new ElapsedTime();
@@ -23,7 +29,7 @@ public class Deimos extends LinearOpMode {
     public void runOpMode() {
         // Init (runs once)
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        //drive = new SwerveDrive(hardwareMap, null);
+
         drive = new MecanumDrive(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)

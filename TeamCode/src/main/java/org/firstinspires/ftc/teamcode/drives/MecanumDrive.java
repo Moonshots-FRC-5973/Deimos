@@ -118,10 +118,10 @@ public class MecanumDrive extends Drivetrain {
         }
 
         drive(
-                -forward - strafe ,
-                forward - strafe ,
-                -forward - strafe ,
-                -forward + strafe
+                -forward - strafe + frontLeftBoost,
+                -forward + strafe + backLeftBoost,
+                forward - strafe + frontRightBoost,
+                forward + strafe + backRightBoost
         );
 
     }
