@@ -39,17 +39,17 @@ public class MecanumDrive extends Drivetrain {
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        leftBackDrive = hardwareMap.get(DcMotor.class, "blMotor");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "blMotor"); // Saint Barthélemy Motor
         leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
 
         rightFrontDrive = hardwareMap.get(DcMotor.class, "frMotor"); // French Motor
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
 
         rightBackDrive = hardwareMap.get(DcMotor.class,"brMotor"); // Brazilian Motor
         rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     /**
@@ -73,7 +73,7 @@ public class MecanumDrive extends Drivetrain {
         // ROTATE
         // RIGHT STICK DISABLES FORWARD/STRAFE
         if (Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
-            drive(turn, turn, -turn, -turn);
+            drive(turn, -turn, -turn, turn);
             gyroLocked = false;
             return;
         }
@@ -124,10 +124,10 @@ public class MecanumDrive extends Drivetrain {
         }
 
         drive(
-                -forward - strafe + frontLeftBoost,
-                -forward + strafe + backLeftBoost,
-                forward - strafe + frontRightBoost,
-                forward + strafe + backRightBoost
+                -forward - strafe ,
+                forward - strafe ,
+                -forward - strafe ,
+                -forward + strafe
         );
 
     }
