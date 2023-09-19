@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -47,6 +48,7 @@ import java.util.List;
  * two webcams.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
+ * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 @TeleOp(name = "Concept: TensorFlow Object Detection Switchable Cameras", group = "Concept")
@@ -73,8 +75,12 @@ public class ConceptTensorFlowObjectDetectionSwitchableCameras extends LinearOpM
     @Override
     public void runOpMode() {
 
+
         initTfod();
 
+        // Wait for the DS start button to be touched.
+        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch Play to start OpMode");
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
@@ -117,8 +123,44 @@ public class ConceptTensorFlowObjectDetectionSwitchableCameras extends LinearOpM
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder().build();
 
+
+                telemetryCameraSwitching();
+                telemetryTfod();
+
+                // Push telemetry to the Driver Station.
+                telemetry.update();
+
+                // Save CPU resources; can resume streaming when needed.
+                if (gamepad1.dpad_down) {
+                    visionPortal.stopStreaming();
+                } else if (gamepad1.dpad_up) {
+                    visionPortal.resumeStreaming();
+                }
+
+                doCameraSwitching();
+
+                // Share the CPU.
+                sleep(20);
+            }
+        }
+
+        // Save more CPU resources when camera is no longer needed.
+        visionPortal.close();
+
+    }   // end runOpMode()
+
+    /**
+     * Initialize the TensorFlow Object Detection processor.
+     */
+    private void initTfod() {
+
+        // Create the TensorFlow processor by using a builder.
+        tfod = new TfodProcessor.Builder().build();
+
         webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
+        CameraName switchableCamera = ClassFactory.getInstance()
+            .getCameraManager().nameForSwitchableCamera(webcam1, webcam2);
         CameraName switchableCamera = ClassFactory.getInstance()
             .getCameraManager().nameForSwitchableCamera(webcam1, webcam2);
 

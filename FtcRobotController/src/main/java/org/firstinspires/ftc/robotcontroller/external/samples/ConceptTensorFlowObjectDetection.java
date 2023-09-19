@@ -112,6 +112,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
 
     /**
      * Initialize the TensorFlow Object Detection processor.
+     * Initialize the TensorFlow Object Detection processor.
      */
     private void initTfod() {
 
