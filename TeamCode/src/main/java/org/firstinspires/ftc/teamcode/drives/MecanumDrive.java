@@ -73,7 +73,7 @@ public class MecanumDrive extends Drivetrain {
         // ROTATE
         // RIGHT STICK DISABLES FORWARD/STRAFE
         if (Math.abs(turn) >= Constants.INPUT_THRESHOLD) {
-            drive(-turn, turn, -turn, turn);
+            drive(turn, turn, -turn, -turn);
             gyroLocked = false;
             return;
         }
@@ -124,8 +124,8 @@ public class MecanumDrive extends Drivetrain {
         }
 
         drive(
-                forward + strafe + frontLeftBoost,
-                forward - strafe + backLeftBoost,
+                -forward - strafe + frontLeftBoost,
+                -forward + strafe + backLeftBoost,
                 forward - strafe + frontRightBoost,
                 forward + strafe + backRightBoost
         );
