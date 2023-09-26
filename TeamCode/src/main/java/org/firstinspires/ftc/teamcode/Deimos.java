@@ -6,21 +6,29 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
 import org.firstinspires.ftc.teamcode.vision.Camera;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.util.List;
 
 @TeleOp(name="Deimos")
 public class Deimos extends LinearOpMode {
-/*
-    <<<<<<< Updated upstream
-    //private SwerveDrive drive;
-=======
->>>>>>> Stashed changes
+    public static final double APRIL_TAG_DISTANCE_TARGET = 20;
+    public static final double APRIL_TAG_PRECISION = 5;
+    public static final double APRIL_TAG_MAX_SPEED = 0.4;
 
- */
+    private enum AprilTagToAlign {
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+
     private MecanumDrive drive;
+    private Camera camera;
     private double lastTime = 0.0d;
     private final ElapsedTime elapsedTime = new ElapsedTime();
 
@@ -32,6 +40,8 @@ public class Deimos extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         drive = new MecanumDrive(hardwareMap, telemetry);
+
+        camera = new Camera(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
         while(opModeInInit()) {
@@ -74,41 +84,18 @@ public class Deimos extends LinearOpMode {
      */
     private void driver1Inputs() {
         // DPad inputs, checking for overload; control for the drivetrain to rotate the robot
-        boolean turnUp = (gamepad1.dpad_up && !gamepad1.dpad_down);
-        boolean turnDown = (gamepad1.dpad_down && !gamepad1.dpad_up);
-        boolean turnLeft = (gamepad1.dpad_left && !gamepad1.dpad_right);
-        boolean turnRight = (gamepad1.dpad_right && !gamepad1.dpad_left);
+        boolean dpadUp = (gamepad1.dpad_up && !gamepad1.dpad_down);
+        boolean dpadDown = (gamepad1.dpad_down && !gamepad1.dpad_up);
+        boolean dpadLeft = (gamepad1.dpad_left && !gamepad1.dpad_right);
+        boolean dpadRight = (gamepad1.dpad_right && !gamepad1.dpad_left);
 
-        if(turnUp) {
-            if(turnRight) {
-                telemetry.addData("Drive", "Turning to -45");
-                drive.turnRobotToAngle(-45);
-            } else if(turnLeft) {
-                telemetry.addData("Drive", "Turning to 45");
-                drive.turnRobotToAngle(45);
-            } else {
-                telemetry.addData("Drive", "Turning to 0");
-                drive.turnRobotToAngle(0);
-            }
-        } else if(turnDown) {
-            if (turnRight) {
-                telemetry.addData("Drive", "Turning to -135");
-                drive.turnRobotToAngle(-135);
-            } else if (turnLeft) {
-                telemetry.addData("Drive", "Turning to 135");
-                drive.turnRobotToAngle(135);
-            } else {
-                telemetry.addData("Drive", "Turning to 180");
-                drive.turnRobotToAngle(180);
-            }
-        } else if(turnRight) {
-            telemetry.addData("Drive", "Turning to -90");
-            drive.turnRobotToAngle(-90);
-        } else if(turnLeft) {
-            telemetry.addData("Drive", "Turning to 90");
-            drive.turnRobotToAngle(90);
-        }
-        else {
+        if(dpadLeft && !(dpadUp || dpadRight)) {
+            alignToAprilTag(AprilTagToAlign.LEFT);
+        } else if(dpadUp && !(dpadLeft || dpadRight)) {
+            alignToAprilTag(AprilTagToAlign.CENTER);
+        } else if(dpadRight && !(dpadUp || dpadLeft)) {
+            alignToAprilTag(AprilTagToAlign.RIGHT);
+        } else {
             telemetry.addData("Drive", "Listening to LSX, LSY, RSX");
             double forward = gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
@@ -139,6 +126,75 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
+    }
 
+    private void alignToAprilTag(AprilTagToAlign alignment) {
+        switch (alignment) {
+            case LEFT: telemetry.addData("Aligning To", "Left"); break;
+            case CENTER: telemetry.addData("Aligning To", "Center"); break;
+            case RIGHT: telemetry.addData("Aligning To", "Right"); break;
+        }
+        // Get AprilTags
+        AprilTagDetection correctTag;
+        List<AprilTagDetection> detections = camera.getDetections();
+        if(detections.size() == 0) {
+            drive.stop();
+            telemetry.addData("Detections", "No AprilTags found");
+            return;
+        }
+
+        telemetry.addData("Detections", detections.size());
+
+        do {
+            AprilTagDetection detection = detections.get(0);
+            telemetry.addData("Tracking XYZ", "(%.2f, %.2f, %.2f)",
+                    detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
+            telemetry.addData("Tracking YPR", "(%.2f, %.2f, %.2f)",
+                    detection.ftcPose.yaw, detection.ftcPose.pitch, detection.ftcPose.roll);
+
+            // According to the alignment, we need to find if one of the tags is the correct one,
+            // or if we have to adjust to find it.
+            if(alignment == AprilTagToAlign.LEFT) {
+                double turn = Math.toRadians(-detection.ftcPose.yaw / (3 * APRIL_TAG_PRECISION));
+                if(detection.metadata.name.toLowerCase().contains("left")) {
+                    telemetry.addData("Position", "Finalizing");
+                    // Treat the flight stick inversion
+                    double forward = Range.clip((detection.ftcPose.y - APRIL_TAG_DISTANCE_TARGET) / APRIL_TAG_PRECISION, -APRIL_TAG_MAX_SPEED, APRIL_TAG_MAX_SPEED);
+                    // Reversed since the camera is on the back of the robot
+                    double strafe = Range.clip((-detection.ftcPose.x) / APRIL_TAG_PRECISION, -APRIL_TAG_MAX_SPEED, APRIL_TAG_MAX_SPEED);
+
+                    if (
+                            Math.abs(forward) <= Constants.INPUT_THRESHOLD &&
+                                    Math.abs(strafe) <= Constants.INPUT_THRESHOLD &&
+                                    Math.abs(turn) <= Constants.INPUT_THRESHOLD
+                    ) {
+                        drive.stop();
+                        telemetry.addData("Movement", "Done");
+                        return;
+                    }
+
+                    telemetry.addData("Movement", "(%.2f, %.2f, %.2f)",
+                            forward, strafe, turn);
+
+                    drive.drive(forward, strafe, turn);
+                    break;
+                } else {
+                    telemetry.addData("Position", "Wrong Tag");
+                    // Treat the flight stick, even if it's the wrong tag, it'll still be correct to adjust to
+                    double forward = Range.clip((detection.ftcPose.y - APRIL_TAG_DISTANCE_TARGET) / APRIL_TAG_PRECISION, -APRIL_TAG_MAX_SPEED, APRIL_TAG_MAX_SPEED);
+                    // Reversed since the camera is on the back of the robot
+                    double strafe = APRIL_TAG_MAX_SPEED;
+
+                    telemetry.addData("Movement", "(%.2f, %.2f, %.2f)",
+                            forward, strafe, turn);
+
+                    drive.drive(forward, strafe, turn);
+                    break;
+                }
+            }
+
+            telemetry.update();
+            detections = camera.getDetections();
+        } while(detections.size() != 0 && !gamepad1.dpad_down && !isStopRequested());
     }
 }
