@@ -44,7 +44,7 @@ public class AprilTagPipeline extends OpenCvPipeline {
     private long nativeApriltagPtr;
     private float decimation;
 
-    private ArrayList<AprilTagDetection> detections = new ArrayList<>();
+    private volatile ArrayList<AprilTagDetection> detections = new ArrayList<>();
 
     /*
      * A simple container to hold both rotation and translation
@@ -70,7 +70,6 @@ public class AprilTagPipeline extends OpenCvPipeline {
 
     public AprilTagPipeline(Telemetry telemetry) {
         this.telemetry = telemetry;
-
 
         cameraMatrix = new Mat(3,3, CvType.CV_32FC1);
 
