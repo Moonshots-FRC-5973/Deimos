@@ -22,6 +22,8 @@ public class MecanumDrive extends Drivetrain {
     private DcMotor leftBack;
     private DcMotor rightBack;
 
+    private double fieldCentricTarget = 0.0d;
+
     private boolean isGyroLocked = false;
     private boolean isTargetSet = false;
     private double gyroTarget = 0.0d;
@@ -38,10 +40,26 @@ public class MecanumDrive extends Drivetrain {
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        fieldCentricTarget = imu.getZAngle();
     }
 
     @Override
     public void drive(double forward, double strafe, double turn) {
+        // Field Centric adjustment
+        if (isFieldCentric) {
+            // Learn more:
+            // https://www.geogebra.org/m/fmegkksm
+            double diff = fieldCentricTarget - imu.getZAngle();
+            double temp = forward;
+            forward = forward * Math.cos(Math.toRadians(diff)) - strafe * Math.sin(Math.toRadians(diff));
+            strafe = temp * Math.sin(Math.toRadians(diff)) + strafe * Math.cos(Math.toRadians(diff));
+        }
+
         telemetry.addData("IMU Rotation", "(%.2f, %.2f, %.2f)",
                 imu.getXAngle(), imu.getYAngle(), imu.getZAngle());
 
@@ -60,7 +78,7 @@ public class MecanumDrive extends Drivetrain {
 
         if(isGyroLocked) {
             double gyroDiff = gyroTarget - imu.getZAngle();
-            if(gyroDiff <= ANGLE_TOLERANCE) gyroDiff = 0;
+            if(Math.abs(gyroDiff) <= ANGLE_TOLERANCE) gyroDiff = 0;
             // IF WE ARE ROTATING TO THE RIGHT (gyro difference is more positive)
             // Give the right side more power and drop the left side power
 
@@ -87,11 +105,23 @@ public class MecanumDrive extends Drivetrain {
         // Meaning forward is reversed
         // The boost values should match the turn
         // Since the drive is a diamond wheel pattern instead of an X, it reverses the strafe.
+        double leftFrontPower = -forward +strafe + (turn + leftFrontBoost);
+        double rightFrontPower = forward + strafe + (turn + rightFrontBoost);
+        double leftBackPower = -forward - strafe + (turn + leftBackBoost);
+        double rightBackPower = forward - strafe + (turn + rightBackBoost);
+
+        double powerScale = Math.max(1, Math.abs(
+                Math.max(
+                    Math.max(leftFrontPower, leftBackPower),
+                    Math.max(rightFrontPower, rightBackPower))
+                )
+        );
+
         drive(
-                -forward + strafe - (turn + leftFrontBoost),
-                forward + strafe - (turn + rightFrontBoost),
-                forward + strafe - (turn + leftBackBoost),
-                forward - strafe - (turn + rightBackBoost)
+                leftFrontPower / powerScale,
+                rightFrontPower / powerScale,
+                leftBackPower / powerScale,
+                rightBackPower / powerScale
         );
     }
 
