@@ -18,59 +18,45 @@ import org.firstinspires.ftc.teamcode.systems.CascadeArm;
 import org.firstinspires.ftc.teamcode.systems.DroneLauncher;
 import org.firstinspires.ftc.teamcode.vision.Camera;
 import org.firstinspires.ftc.teamcode.wrappers.IMU;
+import org.firstinspires.ftc.teamcode.wrappers.PIDController;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
+import java.io.IOException;
+
 @TeleOp(name = "Test Suite")
 public class TestSuite extends LinearOpMode {
-
-    //private Camera camera;
-    private long time;
-    private ElapsedTime runtime = new ElapsedTime();
-    private boolean gamepad1APressed = false;
-
-    private enum DisplayMode {
-        IMU_DISPLAY,
-        SENSOR_DISPLAY,
-        CV_DISPLAY,
-        HARDWARE_DISPLAY,
-    }
-
-    private DisplayMode mode = DisplayMode.IMU_DISPLAY;
-
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        while(opModeInInit()) {
-            telemetry.addData("UPS", 1 / runtime.seconds());
-            runtime.reset();
-            telemetry.update();
-            gamepad1APressed = gamepad1.a;
-        }
-
+        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry);
+        PIDController controller = new PIDController(telemetry, "theta");
+        telemetry.addData("IMU Rotation", "(%.2f, %.2f, %.2f)",
+                drive.getIMU().getXAngle(), drive.getIMU().getYAngle(), drive.getIMU().getZAngle());
+        double turnStrength = controller.getPIDControlledValue(Math.toRadians(drive.getIMU().getZAngle()), Math.PI / 2);
+        telemetry.update();
         waitForStart();
 
-/*
-        Camera camera = new Camera(hardwareMap, telemetry);
-
-        while (opModeInInit()) {
-            telemetry.addData("camerafps", camera.getFps());
-        }
-        */
-
-        DroneLauncher droneLauncher = new DroneLauncher(hardwareMap, telemetry);
-        while(! isStopRequested()){
-            if(gamepad1.a){
-                droneLauncher.lauchDrone();
-
-            }
-            else droneLauncher.stopDrone();
-
+        try {
+            controller.resetPID();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
-
+        do {
+            telemetry.addData("turnStrength", turnStrength);
+            telemetry.update();
+            drive.drive(0.0d, 0.0d, turnStrength);
+            turnStrength = controller.getPIDControlledValue(Math.toRadians(drive.getIMU().getZAngle()), Math.PI / 2);
+        } while(turnStrength >= 0.05);
+        try {
+            controller.resetPID();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        drive.stop();
     }
 }
