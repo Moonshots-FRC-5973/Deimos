@@ -8,7 +8,7 @@ public abstract class Drivetrain {
     // Drivetrain constants
     public static final double ANGLE_TOLERANCE = 1.5; // The angle, in degrees, that is considered "close enough"
     public static final double DISTANCE_TOLERANCE = 1.0; // The distance, in centimeters, that is considered "close enough"
-    public static final double MOTOR_MAX_SPEED = 0.4;
+    public static final double MOTOR_MAX_SPEED = 0.9;
     public static final double SWERVE_ENCODER_COUNTS_PER_REV = 2047.136; // Single revolution encoder ticks
     public static final double SWERVE_ENCODER_COUNTS_PER_INCH =  260.649; // Encoder Ticks per Inch
     public static final double SWERVE_WHEEL_ROT_MULTIPLIER = 3;
