@@ -76,23 +76,6 @@ public class MecanumDrive extends Drivetrain {
         double leftBackBoost = 0;
         double rightBackBoost = 0;
 
-        if(isGyroLocked) {
-            double gyroDiff = gyroTarget - imu.getZAngle();
-            if(Math.abs(gyroDiff) <= ANGLE_TOLERANCE) gyroDiff = 0;
-            // IF WE ARE ROTATING TO THE RIGHT (gyro difference is more positive)
-            // Give the right side more power and drop the left side power
-
-            // IF WE ARE ROTATING TO THE LEFT (gyro difference is more negative)
-            // Give the left side more power and drop the right side power
-
-            double turnBoost = BOOST_MULTIPLIER * Math.sin(Math.toRadians(2 * gyroDiff));
-
-            leftFrontBoost -= turnBoost;
-            leftBackBoost -= turnBoost;
-            rightFrontBoost -= turnBoost;
-            rightBackBoost -= turnBoost;
-        }
-
         // Forward / Strafe alignment
         // Uses the accelerometer on the IMU to ensure accurate movement
 
