@@ -177,7 +177,6 @@ public class Deimos extends LinearOpMode {
                             forward, strafe, turn);
 
                     drive.drive(forward, strafe, turn);
-                    break;
                 } else {
                     telemetry.addData("Position", "Wrong Tag");
                     // Treat the flight stick, even if it's the wrong tag, it'll still be correct to adjust to
@@ -189,8 +188,8 @@ public class Deimos extends LinearOpMode {
                             forward, strafe, turn);
 
                     drive.drive(forward, strafe, turn);
-                    break;
                 }
+                break;
             }
 
             telemetry.update();

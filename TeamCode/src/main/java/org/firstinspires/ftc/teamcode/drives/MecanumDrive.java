@@ -60,8 +60,9 @@ public class MecanumDrive extends Drivetrain {
             strafe = temp * Math.sin(Math.toRadians(diff)) + strafe * Math.cos(Math.toRadians(diff));
         }
 
-        telemetry.addData("IMU Rotation", "(%.2f, %.2f, %.2f)",
-                imu.getXAngle(), imu.getYAngle(), imu.getZAngle());
+        if(telemetry != null)
+            telemetry.addData("IMU Rotation", "(%.2f, %.2f, %.2f)",
+                    imu.getXAngle(), imu.getYAngle(), imu.getZAngle());
 
         isGyroLocked = turn <= Constants.INPUT_THRESHOLD;
         if(isGyroLocked && !isTargetSet) {
@@ -71,34 +72,38 @@ public class MecanumDrive extends Drivetrain {
             isTargetSet = false;
         }
 
-        double leftFrontBoost = 0;
-        double rightFrontBoost = 0;
-        double leftBackBoost = 0;
-        double rightBackBoost = 0;
-
-        // Forward / Strafe alignment
-        // Uses the accelerometer on the IMU to ensure accurate movement
-
-        // Stop boost if not moving
-        if(Math.hypot(forward, strafe) <= Constants.INPUT_THRESHOLD) {
-            isGyroLocked = false;
-        }
 
         // I'm tired of figuring out the input problems so the inputs are still in flight stick mode
         // Meaning forward is reversed
         // The boost values should match the turn
         // Since the drive is a diamond wheel pattern instead of an X, it reverses the strafe.
-        double leftFrontPower = -forward +strafe + (turn + leftFrontBoost);
-        double rightFrontPower = forward + strafe + (turn + rightFrontBoost);
-        double leftBackPower = -forward - strafe + (turn + leftBackBoost);
-        double rightBackPower = forward - strafe + (turn + rightBackBoost);
+        double leftFrontPower = -forward +strafe + turn;
+        double rightFrontPower = forward + strafe + turn;
+        double leftBackPower = -forward - strafe + turn;
+        double rightBackPower = forward - strafe + turn;
 
-        double powerScale = Math.max(1, Math.abs(
+        double powerScale = Math.max(1,
+            Math.max(
                 Math.max(
-                    Math.max(leftFrontPower, leftBackPower),
-                    Math.max(rightFrontPower, rightBackPower))
+                    Math.abs(leftFrontPower),
+                    Math.abs(leftBackPower)
+                ),
+                Math.max(
+                    Math.abs(rightFrontPower),
+                    Math.abs(rightBackPower)
                 )
+            )
         );
+
+        leftFrontPower /= powerScale;
+        leftBackPower /= powerScale;
+        rightBackPower /= powerScale;
+        rightFrontPower /= powerScale;
+
+
+        if(telemetry != null)
+            telemetry.addData("Motors", "(%.2f, %.2f, %.2f, %.2f)",
+                    leftFrontPower, leftBackPower, rightBackPower, rightFrontPower);
 
         drive(
                 leftFrontPower / powerScale,
@@ -110,7 +115,6 @@ public class MecanumDrive extends Drivetrain {
 
     @Override
     protected void drive(double m1, double m2, double m3, double m4) {
-        telemetry.addData("Motors", "(%.2f, %.2f, %.2f, %.2f)", m1, m2, m3, m4);
         leftFront.setPower(Range.clip(m1, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
         rightFront.setPower(Range.clip(m2, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
         leftBack.setPower(Range.clip(m3, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));

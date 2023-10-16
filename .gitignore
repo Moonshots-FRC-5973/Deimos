@@ -79,3 +79,5 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+TeamCode/src/main/.vscode/settings.json
+*.pyc

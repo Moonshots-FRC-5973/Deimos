@@ -34,11 +34,11 @@ public class Camera {
             if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
                 exposureControl.setMode(ExposureControl.Mode.Manual);
             }
-            exposureControl.setExposure(1, TimeUnit.MILLISECONDS);
+            exposureControl.setExposure(15, TimeUnit.MILLISECONDS);
 
             // Set Gain.
             GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
-            gainControl.setGain(0);
+            gainControl.setGain(25);
         }
         return aprilTag.getDetections();
     }
