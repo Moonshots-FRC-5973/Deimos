@@ -12,12 +12,15 @@ public class Arm {
 
     private Telemetry telemetry;
     private DcMotor motor;
+    private CascadeArm cascadeArm;
 
     public Arm(HardwareMap hardwareMap, Telemetry telemetry) {
         this.motor = hardwareMap.get(DcMotor.class, "arm");
         this.telemetry = telemetry;
         motor.setPower(MOTOR_STRENGTH);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        this.cascadeArm = new CascadeArm(hardwareMap,telemetry);
+
     }
 
     public void raise() {

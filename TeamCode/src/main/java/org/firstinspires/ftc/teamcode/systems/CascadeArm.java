@@ -11,24 +11,33 @@ public class CascadeArm {
     public static final double POWER = 0.5;
     protected DcMotor motor;
     protected Telemetry telemetry;
+
+    public enum State {
+        EXTENDED,
+        CONTRACTED
+    }
+    public State state = State.CONTRACTED;
+
     public CascadeArm(HardwareMap hardwareMap, Telemetry telemetry) {
-        motor = hardwareMap.get(DcMotor.class, "testMotor");
+        motor = hardwareMap.get(DcMotor.class, "cascade");
         motor.setDirection(DcMotorSimple.Direction.REVERSE);
         this.telemetry = telemetry;
 
     }
-    public void raiseArm(){
+    public void extendArm(){
         // RaiseArm
         motor.setTargetPosition(MAXIMUM);
         motor.setPower(POWER);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        state = State.EXTENDED;
+
     }
 
-    public void lowerArm(){
+    public void contractedArm(){
         // LowerArm
         motor.setTargetPosition(MINIMUM);
         motor.setPower(POWER);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
+        state = State.CONTRACTED;
     }
 }

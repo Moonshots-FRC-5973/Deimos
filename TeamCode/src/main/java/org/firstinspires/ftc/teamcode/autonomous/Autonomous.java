@@ -150,12 +150,16 @@ public class Autonomous extends LinearOpMode {
             } else {
                 telemetry.addData("Detection (X, Y, Theta", "(%.2f, %.2f, %.2f", activeDetection.ftcPose.x, activeDetection.ftcPose.y, activeDetection.ftcPose.yaw);
                 telemetry.update();
-                double strafe = 4 - activeDetection.ftcPose.y;
-                if(rearDistance.getDistance() <= 4) strafe = 0;
-                drive.drive( -activeDetection.ftcPose.x / 5, strafe, Math.toRadians(activeDetection.ftcPose.yaw));
+                drive.drive( -activeDetection.ftcPose.x / 5, 0, -Math.toRadians(activeDetection.ftcPose.yaw));
+                if(Math.abs(activeDetection.ftcPose.x) <= 0.1 && Math.abs(Math.toRadians(activeDetection.ftcPose.yaw)) <= 0.1) {
+                    break;
+                }
             }
-
             // PX, PY, AZ
+        }
+
+        while(opModeIsActive() && rearDistance.getDistance() >= 8) {
+            drive.drive(0.0, -0.15, 0.0);
         }
         /*
         PIDController thetaController = new PIDController(telemetry, "theta");
