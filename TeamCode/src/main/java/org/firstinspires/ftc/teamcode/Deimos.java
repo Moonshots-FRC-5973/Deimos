@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
+import org.firstinspires.ftc.teamcode.systems.Arm;
 import org.firstinspires.ftc.teamcode.vision.Camera;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -26,6 +27,8 @@ public class Deimos extends LinearOpMode {
         CENTER,
         RIGHT
     }
+
+    private Arm armyMcArmArmiesonInTheArmy;
 
     private MecanumDrive drive;
     private Camera camera;
@@ -126,6 +129,12 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
+        double r = gamepad2.left_stick_y;
+        double theta = gamepad2.right_stick_y;
+        if(Math.abs(r) <= Constants.INPUT_THRESHOLD) r = 0;
+        if(Math.abs(theta) <= Constants.INPUT_THRESHOLD) theta = 0;
+        armyMcArmArmiesonInTheArmy.move(theta, r);
+
     }
 
     private void alignToAprilTag(AprilTagToAlign alignment) {

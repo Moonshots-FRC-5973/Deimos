@@ -17,21 +17,16 @@ public class Arm {
     public Arm(HardwareMap hardwareMap, Telemetry telemetry) {
         this.motor = hardwareMap.get(DcMotor.class, "arm");
         this.telemetry = telemetry;
-        motor.setPower(MOTOR_STRENGTH);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         this.cascadeArm = new CascadeArm(hardwareMap,telemetry);
 
     }
 
-    public void raise() {
-        motor.setTargetPosition(UP_POSITION);
-        motor.setPower(MOTOR_STRENGTH);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    public void move(double shoulderRot, double armStrength){
+        int position = motor.getCurrentPosition();
+        motor.setPower(shoulderRot);
+        if((shoulderRot < 0 && position <= UP_POSITION) || (shoulderRot > 0 && position >= DOWN_POSITION)) motor.setPower(shoulderRot);
+        else motor.setPower(0);
+        cascadeArm.moveArm(armStrength);
     }
 
-    public void lower() {
-        motor.setTargetPosition(DOWN_POSITION);
-        motor.setPower(MOTOR_STRENGTH);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
 }
