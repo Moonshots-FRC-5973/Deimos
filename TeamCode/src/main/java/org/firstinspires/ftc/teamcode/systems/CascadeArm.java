@@ -24,13 +24,13 @@ public class CascadeArm {
         this.telemetry = telemetry;
 
     }
-    public void extendArm(){
-        // RaiseArm
-        motor.setTargetPosition(MAXIMUM);
+    public void moveArm(double strength){
+        // raise arm OR lower arm
+        int position = motor.getCurrentPosition();
         motor.setPower(POWER);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         state = State.EXTENDED;
-
+        if((strength < 0 && position <= MAXIMUM) || (strength > 0 && position >= MINIMUM)) motor.setPower(strength * POWER);
+        else motor.setPower(0);
     }
 
     public void contractedArm(){
