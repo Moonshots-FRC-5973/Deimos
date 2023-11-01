@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.teamcode.Constants;
 
 public class MecanumDrive extends Drivetrain {
-    //public static final double MOTOR_MAX_POWER = 0.5;
+    public static final double MOTOR_MAX_POWER = 0.5;
     public static final double BOOST_MULTIPLIER = 3;
 
     private DcMotor leftFront;
@@ -104,12 +104,12 @@ public class MecanumDrive extends Drivetrain {
         if(telemetry != null)
             telemetry.addData("Motors", "(%.2f, %.2f, %.2f, %.2f)",
                     leftFrontPower, leftBackPower, rightBackPower, rightFrontPower);
-
+//;
         drive(
-                leftFrontPower / powerScale,
-                rightFrontPower / powerScale,
-                leftBackPower / powerScale,
-                rightBackPower / powerScale
+                leftFrontPower,
+                rightFrontPower,
+                leftBackPower,
+                rightBackPower
         );
     }
 

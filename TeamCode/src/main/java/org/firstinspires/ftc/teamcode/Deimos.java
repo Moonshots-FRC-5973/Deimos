@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
-import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
-import org.firstinspires.ftc.teamcode.systems.Arm;
+import org.firstinspires.ftc.teamcode.systems.CascadeArm;
+import org.firstinspires.ftc.teamcode.systems.Shoulder;
 import org.firstinspires.ftc.teamcode.vision.Camera;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -29,12 +29,12 @@ public class Deimos extends LinearOpMode {
         RIGHT
     }
 
-    private Arm armyMcArmArmiesonInTheArmy;
-
-    private MecanumDrive drive;
-    private Camera camera;
+    private Shoulder shoulderMcShoulderShoulderson;
+    private CascadeArm cascadeExtenderRetractorBoi;
+    private MecanumDrive driveyMcDriveDriveDriverson;
+    private Camera cameraMcCamCameraCammerson;
     private double lastTime = 0.0d;
-    private final ElapsedTime elapsedTime = new ElapsedTime();
+    private final ElapsedTime timeyMcTimeTimerTimerson = new ElapsedTime();
 
     private boolean gp1aPressed = false;
     
@@ -43,9 +43,10 @@ public class Deimos extends LinearOpMode {
         // Init (runs once)
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, telemetry);
-
-        camera = new Camera(hardwareMap, telemetry);
+        driveyMcDriveDriveDriverson = new MecanumDrive(hardwareMap, telemetry);
+        shoulderMcShoulderShoulderson = new Shoulder(hardwareMap, telemetry);
+        cameraMcCamCameraCammerson = new Camera(hardwareMap, telemetry);
+        cascadeExtenderRetractorBoi = new CascadeArm(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
         while(opModeInInit()) {
@@ -58,27 +59,25 @@ public class Deimos extends LinearOpMode {
         // Start (runs once)
         telemetry.addData("Status", "Started");
         telemetry.update();
-        elapsedTime.reset();
+
+        timeyMcTimeTimerTimerson.reset();
 
         // Main (runs until stop is pressed)
         while(opModeIsActive()) {
             telemetry.addData("G1LS", "(%f, %f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
             telemetry.addData("G1RS", "(%f, %f)", gamepad1.right_stick_x, gamepad1.right_stick_y);
-            telemetry.addData("UPS", 1 / (elapsedTime.seconds() - lastTime));
-            lastTime = elapsedTime.seconds();
+            telemetry.addData("UPS", 1 / (timeyMcTimeTimerTimerson.seconds() - lastTime));
+            lastTime = timeyMcTimeTimerTimerson.seconds();
             //
             // Driver 1: Responsible for drivetrain and movement
             driver1Inputs();
             // Driver 2: Responsible for the subsystem attachment
             driver2Inputs();
-            //
-
-
 
             telemetry.update();
         }
         // Stop (runs once)
-        drive.stop();
+        driveyMcDriveDriveDriverson.stop();
     }
 
     /**
@@ -110,14 +109,14 @@ public class Deimos extends LinearOpMode {
             if (Math.abs(strafe) <= Constants.INPUT_THRESHOLD)  strafe = 0.0d;
             if (Math.abs(turn) <= Constants.INPUT_THRESHOLD) turn = 0.0d;
 
-            drive.drive(forward, strafe, turn);
+            driveyMcDriveDriveDriverson.drive(forward, strafe, turn);
         }
 
         if(gamepad1.a && !gp1aPressed && !gamepad1.start) {
-            drive.toggleFieldCentric();
+            driveyMcDriveDriveDriverson.toggleFieldCentric();
         }
 
-        if(drive.getFieldCentric())
+        if(driveyMcDriveDriveDriverson.getFieldCentric())
             telemetry.addData("Mode", "Field Centric");
         else
             telemetry.addData("Mode", "Robot Centric");
@@ -130,12 +129,12 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
-        double r = gamepad2.left_stick_y;
-        double theta = gamepad2.right_stick_y;
-        if(Math.abs(r) <= Constants.INPUT_THRESHOLD) r = 0;
-        if(Math.abs(theta) <= Constants.INPUT_THRESHOLD) theta = 0;
-        armyMcArmArmiesonInTheArmy.move(theta, r);
-
+        double shoulderRotate = gamepad2.left_stick_y;
+        double cascadeDirection = gamepad2.right_stick_y;
+        if(Math.abs(shoulderRotate) <= Constants.INPUT_THRESHOLD) shoulderRotate = 0;
+        if(Math.abs(cascadeDirection) <= Constants.INPUT_THRESHOLD) cascadeDirection = 0;
+        shoulderMcShoulderShoulderson.move(shoulderRotate);
+        cascadeExtenderRetractorBoi.move(cascadeDirection);
     }
 
     private void alignToAprilTag(AprilTagToAlign alignment) {
@@ -146,9 +145,9 @@ public class Deimos extends LinearOpMode {
         }
         // Get AprilTags
         AprilTagDetection correctTag;
-        List<AprilTagDetection> detections = camera.getDetections();
+        List<AprilTagDetection> detections = cameraMcCamCameraCammerson.getDetections();
         if(detections.size() == 0) {
-            drive.stop();
+            driveyMcDriveDriveDriverson.stop();
             telemetry.addData("Detections", "No AprilTags found");
             return;
         }
@@ -178,7 +177,7 @@ public class Deimos extends LinearOpMode {
                                     Math.abs(strafe) <= Constants.INPUT_THRESHOLD &&
                                     Math.abs(turn) <= Constants.INPUT_THRESHOLD
                     ) {
-                        drive.stop();
+                        driveyMcDriveDriveDriverson.stop();
                         telemetry.addData("Movement", "Done");
                         return;
                     }
@@ -186,7 +185,7 @@ public class Deimos extends LinearOpMode {
                     telemetry.addData("Movement", "(%.2f, %.2f, %.2f)",
                             forward, strafe, turn);
 
-                    drive.drive(forward, strafe, turn);
+                    driveyMcDriveDriveDriverson.drive(forward, strafe, turn);
                 } else {
                     telemetry.addData("Position", "Wrong Tag");
                     // Treat the flight stick, even if it's the wrong tag, it'll still be correct to adjust to
@@ -197,13 +196,13 @@ public class Deimos extends LinearOpMode {
                     telemetry.addData("Movement", "(%.2f, %.2f, %.2f)",
                             forward, strafe, turn);
 
-                    drive.drive(forward, strafe, turn);
+                    driveyMcDriveDriveDriverson.drive(forward, strafe, turn);
                 }
                 break;
             }
 
             telemetry.update();
-            detections = camera.getDetections();
+            detections = cameraMcCamCameraCammerson.getDetections();
         } while(detections.size() != 0 && !gamepad1.dpad_down && !isStopRequested());
     }
 }

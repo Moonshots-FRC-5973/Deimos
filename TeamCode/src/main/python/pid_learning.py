@@ -11,6 +11,7 @@ def generate_random_data():
             random.gammavariate(random.randint(1, 1000) / 1000,random.randint(1, 1000) / 1000),
             random.gammavariate(random.randint(1, 1000) / 1000,random.randint(1, 1000) / 1000),
         )
+        # What is that math???
         e = p * i * d * random.lognormvariate(5, 1)
         data.append([p, i, d, e])
     with open("data.json", 'w') as f:

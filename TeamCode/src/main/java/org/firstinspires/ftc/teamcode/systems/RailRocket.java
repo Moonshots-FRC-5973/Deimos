@@ -25,17 +25,17 @@ public class RailRocket {
     This file will be all coded by Ed + Stacy. Last modified 10/20/2023 11:54am worked on comments and basically just started
      */
 
-    // there is already a Servo class :) - like turtle
+    // there is already a Servo class :) - turtle
     private Servo servo;
 
     // when creating a constructor for the robot these parameters are standard for most of this stuff
     public RailRocket(HardwareMap hardwareMap, Telemetry telemetry){
-        // need the given telemetry cuz robotcs
+        // need the given telemetry because robotics
         this.telemetry = telemetry;
 
         // look for a servo with a release pin and set this servo equal to that servo
         this.servo = hardwareMap.get(Servo.class, "releasePin");
-        // at this poitn we have the servo, time to make it do stuff :)
+        // at this point we have the servo, time to make it do stuff :)
 
     }
     // create a method that can be called that moves the motor. It shouldn't take in or return any values.
