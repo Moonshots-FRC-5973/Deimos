@@ -12,23 +12,19 @@ public class CascadeArm {
     protected DcMotor motor;
     protected Telemetry telemetry;
 
-    public enum State {
-        EXTENDED,
-        CONTRACTED
-    }
-    public State state = State.CONTRACTED;
-
     public CascadeArm(HardwareMap hardwareMap, Telemetry telemetry) {
         motor = hardwareMap.get(DcMotor.class, "cascade");
-        motor.setDirection(DcMotorSimple.Direction.REVERSE);
+       // motor.setDirection(DcMotorSimple.Direction.REVERSE);
         this.telemetry = telemetry;
 
     }
-    public void moveArm(double strength){
-        // raise arm OR lower arm
+    public void move(double strength){
+        if(telemetry != null) {
+            telemetry.addData("Arm Pos", motor.getCurrentPosition());
+            telemetry.addData("Arm Power", motor.getPower());
+        }
+
         int position = motor.getCurrentPosition();
-        motor.setPower(POWER);
-        state = State.EXTENDED;
         if((strength < 0 && position <= MAXIMUM) || (strength > 0 && position >= MINIMUM)) motor.setPower(strength * POWER);
         else motor.setPower(0);
     }

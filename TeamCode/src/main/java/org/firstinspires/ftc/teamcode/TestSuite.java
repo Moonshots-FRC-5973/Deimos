@@ -6,24 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.drives.Drivetrain;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
-import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
-
-import org.firstinspires.ftc.teamcode.systems.Arm;
-import org.firstinspires.ftc.teamcode.systems.CascadeArm;
-import org.firstinspires.ftc.teamcode.systems.DroneLauncher;
-import org.firstinspires.ftc.teamcode.vision.Camera;
-import org.firstinspires.ftc.teamcode.wrappers.IMU;
 import org.firstinspires.ftc.teamcode.wrappers.PIDController;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 
 import java.io.IOException;
 
