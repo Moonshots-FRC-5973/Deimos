@@ -18,6 +18,8 @@ public class CapsViewer extends LinearOpMode {
     private Drivetrain drive;
     private DistanceSensor rearDistance;
     private DistanceSensor leftDistance;
+    private DistanceSensor rightDistance;
+
 
     private boolean next = false;
     private boolean prev = false;
@@ -27,13 +29,16 @@ public class CapsViewer extends LinearOpMode {
     public enum DriveType {
         SWERVE,
         MECANUM,
+        TANK,
         NONE
     }
 
     public enum Page {
         IMU_VIEW,
         SENSOR_VIEW,
-        CV_VIEW
+        CV_VIEW,
+        SERVO_VIEW,
+
     }
 
     private DriveType driveType = DriveType.NONE;
@@ -68,6 +73,7 @@ public class CapsViewer extends LinearOpMode {
 
         rearDistance = new DistanceSensor(hardwareMap, "rear");
         leftDistance = new DistanceSensor(hardwareMap, "left");
+        rightDistance = new DistanceSensor(hardwareMap, "right");
 
         waitForStart();
 
@@ -78,6 +84,9 @@ public class CapsViewer extends LinearOpMode {
                     break;
                 case MECANUM:
                     telemetry.addData("Drive Type", "Mecanum");
+                    break;
+                case TANK:
+                    telemetry.addData("Drive Type", "Tank");
                     break;
                 case NONE:
                     telemetry.addData("Drive Type", "Not Found");
@@ -90,19 +99,25 @@ public class CapsViewer extends LinearOpMode {
                     telemetry.addData("Angle", "(%.2f, %.2f, %.2f)", imu.getXAngle(), imu.getYAngle(), imu.getZAngle());
                     telemetry.addData("Position", "(%.2f, %.2f, %.2f)", imu.getXPosition(), imu.getYPosition(), imu.getZPosition());
                     telemetry.addData("Velocity", "(%.2f, %.2f, %.2f)", imu.getXVelocity(), imu.getYVelocity(), imu.getZVelocity());
-                    prevPage = Page.CV_VIEW;
+                    prevPage = Page.SERVO_VIEW;
                     nextPage = Page.SENSOR_VIEW;
                     break;
                 case SENSOR_VIEW:
                     telemetry.addData("Page", "Sensors");
                     telemetry.addData("Rear Distance Sensor", rearDistance.getDistance());
                     telemetry.addData("Left Distance Sensor", leftDistance.getDistance());
+                    telemetry.addData("Right Distance Sensor", rightDistance.getDistance());
                     prevPage = Page.IMU_VIEW;
                     nextPage = Page.CV_VIEW;
                     break;
                 case CV_VIEW:
                     telemetry.addData("Page", "CV");
                     prevPage = Page.SENSOR_VIEW;
+                    nextPage = Page.SERVO_VIEW;
+                    break;
+                case SERVO_VIEW:
+                    telemetry.addData("Page", "Servo");
+                    prevPage = Page.CV_VIEW;
                     nextPage = Page.IMU_VIEW;
                     break;
             }

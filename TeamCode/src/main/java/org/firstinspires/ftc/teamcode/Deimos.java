@@ -37,6 +37,9 @@ public class Deimos extends LinearOpMode {
     private final ElapsedTime timeyMcTimeTimerTimerson = new ElapsedTime();
 
     private boolean gp1aPressed = false;
+    private boolean gp2aPressed = false;
+    private boolean gp2bPressed = false;
+
     
     @Override
     public void runOpMode() {
@@ -129,12 +132,49 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
+        // LEFT STICK'S Y IS SHOULDER
         double shoulderRotate = gamepad2.left_stick_y;
+        // RIGHT STICK's Y IS CASCADE
         double cascadeDirection = gamepad2.right_stick_y;
+        // DEADZONE
         if(Math.abs(shoulderRotate) <= Constants.INPUT_THRESHOLD) shoulderRotate = 0;
         if(Math.abs(cascadeDirection) <= Constants.INPUT_THRESHOLD) cascadeDirection = 0;
+        // Offsets
+        if(Math.abs(gamepad2.left_trigger) >= Constants.INPUT_THRESHOLD)
+            shoulderMcShoulderShoulderson.changeOffset(5);
+        else if(gamepad2.left_bumper)
+            shoulderMcShoulderShoulderson.changeOffset(-5);
+        // MOVE
+
+        telemetry.addData("GP2Info", String.format("(%.2f, %.2f)", shoulderRotate, cascadeDirection));
+
         shoulderMcShoulderShoulderson.move(shoulderRotate);
         cascadeExtenderRetractorBoi.move(cascadeDirection);
+        if(gamepad2.a && !gp2aPressed && !gamepad2.start){
+            shoulderMcShoulderShoulderson.toggleRoll();
+        }
+
+        if(gamepad2.dpad_up && !gamepad2.dpad_down) {
+            shoulderMcShoulderShoulderson.wristUp();
+        } else if(gamepad2.dpad_down && !gamepad2.dpad_up) {
+            shoulderMcShoulderShoulderson.wristDown();
+        }
+
+        if(gamepad2.dpad_left && !gamepad2.dpad_right) {
+            shoulderMcShoulderShoulderson.rollNegative();
+        } else if(gamepad2.dpad_right && !gamepad2.dpad_left) {
+            shoulderMcShoulderShoulderson.rollPositive();
+        }
+
+        if(gamepad2.b && !gp2bPressed && !gamepad2.start){
+            shoulderMcShoulderShoulderson.toggleOpen();
+            telemetry.addData("Hand open", gamepad2.b);
+        }
+
+
+
+        gp2aPressed = gamepad2.a;
+        gp2bPressed = gamepad2.b;
     }
 
     private void alignToAprilTag(AprilTagToAlign alignment) {

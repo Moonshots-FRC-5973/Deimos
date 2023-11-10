@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class CascadeArm {
-    public static final int MAXIMUM = 500;
+    public static final int MAXIMUM = -2200;
     public static final int MINIMUM = 0;
-    public static final double POWER = 0.5;
+    public static final double POWER = 0.9;
     protected DcMotor motor;
     protected Telemetry telemetry;
 
@@ -16,7 +16,6 @@ public class CascadeArm {
         motor = hardwareMap.get(DcMotor.class, "cascade");
        // motor.setDirection(DcMotorSimple.Direction.REVERSE);
         this.telemetry = telemetry;
-
     }
     public void move(double strength){
         if(telemetry != null) {
@@ -25,7 +24,7 @@ public class CascadeArm {
         }
 
         int position = motor.getCurrentPosition();
-        if((strength < 0 && position <= MAXIMUM) || (strength > 0 && position >= MINIMUM)) motor.setPower(strength * POWER);
+        if((strength < 0 && position >= MAXIMUM) || (strength > 0 && position <= MINIMUM)) motor.setPower(strength * POWER);
         else motor.setPower(0);
     }
 

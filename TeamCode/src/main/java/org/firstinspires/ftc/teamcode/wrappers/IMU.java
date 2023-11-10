@@ -11,7 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 public class IMU {
     public static final AngleUnit ANGLE_UNIT = AngleUnit.DEGREES;
     public static final String NAME = "imu";
-    public static final String LOG_FILE_NAME = "imu.log";
 
     com.qualcomm.robotcore.hardware.IMU imu;
 
@@ -26,7 +25,7 @@ public class IMU {
      * @return the X angle of the internal IMU in the control panel.
      */
     public double getXAngle() {
-        return (double)(imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, ANGLE_UNIT).firstAngle);
+        return imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, ANGLE_UNIT).firstAngle;
     }
 
     /**
@@ -34,7 +33,7 @@ public class IMU {
      * @return the Y angle of the internal IMU in the control panel.
      */
     public double getYAngle() {
-        return (double)(imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, ANGLE_UNIT).secondAngle);
+        return imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, ANGLE_UNIT).secondAngle;
     }
 
     /**
@@ -42,7 +41,7 @@ public class IMU {
      * @return the Z angle of the internal IMU in the control panel.
      */
     public double getZAngle() {
-        return (double)(imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, ANGLE_UNIT).thirdAngle);
+        return imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, ANGLE_UNIT).thirdAngle;
     }
 
     /**
