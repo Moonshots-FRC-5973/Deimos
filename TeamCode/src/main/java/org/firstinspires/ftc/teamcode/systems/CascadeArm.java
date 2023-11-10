@@ -28,11 +28,6 @@ public class CascadeArm {
         else motor.setPower(0);
     }
 
-    public void contractedArm(){
-        // LowerArm
-        motor.setTargetPosition(MINIMUM);
-        motor.setPower(POWER);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        state = State.CONTRACTED;
-    }
+
+
 }

@@ -160,31 +160,29 @@ public class SwerveDrive extends Drivetrain {
         rrMotor.setPower(Range.clip(m4, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED));
     }
 
-    public void setDistanceToTravel(double distance) {
-        llMotor.setTargetPosition(
-                llMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
-        );
+    @Override
+    public void turnRobotToAngle(double target) {
+        double rightWheelAngle = getWheelAngle(rlMotor, rrMotor);
+        double leftWheelAngle = getWheelAngle(llMotor, lrMotor);
+        double multiplier = 1;
+        double leftRotPower, rightRotPower;
 
-        lrMotor.setTargetPosition(
-                lrMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
-        );
+        // If Wheel's forward face is away from the 0 mark, reverse rotation
+        if(Math.abs(leftWheelAngle) >= 90) {
+            multiplier = -1;
+        }
 
-        rlMotor.setTargetPosition(
-                rlMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
-        );
+        // multiplier flips rotation direction; Rest calculates how much rotation we need
+        // https://www.geogebra.org/calculator/ucaxvmtw
+        leftRotPower = multiplier * SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-leftWheelAngle));
+        rightRotPower = multiplier * SWERVE_WHEEL_ROT_MULTIPLIER * Math.sin(Math.toRadians(-rightWheelAngle));
 
-        rrMotor.setTargetPosition(
-                rrMotor.getCurrentPosition() - (int)(distance * SWERVE_ENCODER_COUNTS_PER_INCH)
+        drive(
+                -(MOTOR_MAX_SPEED * multiplier) + leftRotPower,
+                -(MOTOR_MAX_SPEED * multiplier) - leftRotPower,
+                rightRotPower - (MOTOR_MAX_SPEED * multiplier),
+                -(MOTOR_MAX_SPEED * multiplier) - rightRotPower
         );
-        
-        llMotor.setPower(MOTOR_MAX_SPEED);
-        lrMotor.setPower(MOTOR_MAX_SPEED);
-        rlMotor.setPower(MOTOR_MAX_SPEED);
-        rrMotor.setPower(MOTOR_MAX_SPEED);
-        llMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lrMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rlMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rrMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public void setDistanceToTravel(double distance) {
