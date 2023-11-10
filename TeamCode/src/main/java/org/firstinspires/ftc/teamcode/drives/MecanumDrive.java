@@ -14,9 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.teamcode.Constants;
 
 public class MecanumDrive extends Drivetrain {
-    public static final double MOTOR_MAX_POWER = 0.5;
-    public static final double BOOST_MULTIPLIER = 3;
-
     private DcMotor leftFront;
     private DcMotor rightFront;
     private DcMotor leftBack;
@@ -31,8 +28,8 @@ public class MecanumDrive extends Drivetrain {
     public MecanumDrive(HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap, telemetry, new IMU.Parameters(
                 new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                        RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
                 )
         ));
 
@@ -60,13 +57,9 @@ public class MecanumDrive extends Drivetrain {
             strafe = temp * Math.sin(Math.toRadians(diff)) + strafe * Math.cos(Math.toRadians(diff));
         }
 
-        if(telemetry != null)
-            telemetry.addData("IMU Rotation", "(%.2f, %.2f, %.2f)",
-                    imu.getXAngle(), imu.getYAngle(), imu.getZAngle());
-
         isGyroLocked = turn <= Constants.INPUT_THRESHOLD;
         if(isGyroLocked && !isTargetSet) {
-            gyroTarget = imu.getZAngle();
+            gyroTarget = imu.getYAngle();
             isTargetSet = true;
         } else if(!isGyroLocked) {
             isTargetSet = false;
@@ -82,7 +75,7 @@ public class MecanumDrive extends Drivetrain {
         double leftBackPower = -forward - strafe + turn;
         double rightBackPower = forward - strafe + turn;
 
-        double powerScale = Math.max(1,
+        double powerScale = MOTOR_MAX_SPEED * Math.max(1,
             Math.max(
                 Math.max(
                     Math.abs(leftFrontPower),

@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
 import org.firstinspires.ftc.teamcode.sensors.DistanceSensor;
+import org.firstinspires.ftc.teamcode.systems.Shoulder;
 import org.firstinspires.ftc.teamcode.vision.Camera;
 import org.firstinspires.ftc.teamcode.wrappers.PIDController;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -22,11 +23,16 @@ import java.util.List;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous")
 public class Autonomous extends LinearOpMode {
+    // SUBSYSTEMS
     private MecanumDrive drive;
+    private Shoulder shoulder;
 
+    // SENSORS
     private DistanceSensor rearDistance;
     private DistanceSensor leftDistance;
+    private DistanceSensor rightDistance;
 
+    // SUBSYSTEMS THAT ARE JUST SENSORS
     private Camera camera;
 
     private enum TargetPosition {
@@ -39,9 +45,11 @@ public class Autonomous extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new MecanumDrive(hardwareMap, null);
+        shoulder = new Shoulder(hardwareMap, null);
 
         rearDistance = new DistanceSensor(hardwareMap, "rear");
         leftDistance = new DistanceSensor(hardwareMap, "left");
+        rightDistance = new DistanceSensor(hardwareMap, "right");
 
         camera = new Camera(hardwareMap, telemetry);
 
@@ -160,6 +168,14 @@ public class Autonomous extends LinearOpMode {
 
         while(opModeIsActive() && rearDistance.getDistance() >= 8) {
             drive.drive(0.0, -0.15, 0.0);
+        }
+
+        while(opModeIsActive() && rightDistance.getDistance() <= 42) {
+            drive.drive(-1.0, 0.0, 0.0);
+        }
+
+        while(opModeIsActive() && rearDistance.getDistance() >= 1) {
+            drive.drive(0.0, -0.2, 0.0);
         }
         /*
         PIDController thetaController = new PIDController(telemetry, "theta");
