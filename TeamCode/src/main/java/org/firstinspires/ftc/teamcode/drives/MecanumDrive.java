@@ -55,7 +55,9 @@ public class MecanumDrive extends Drivetrain {
             double temp = forward;
             forward = forward * Math.cos(Math.toRadians(diff)) - strafe * Math.sin(Math.toRadians(diff));
             strafe = temp * Math.sin(Math.toRadians(diff)) + strafe * Math.cos(Math.toRadians(diff));
-        }
+            telemetry.addData("Mode", "Field Centric");
+        } else
+            telemetry.addData("Mode", "Robot Centric");
 
         isGyroLocked = turn <= Constants.INPUT_THRESHOLD;
         if(isGyroLocked && !isTargetSet) {

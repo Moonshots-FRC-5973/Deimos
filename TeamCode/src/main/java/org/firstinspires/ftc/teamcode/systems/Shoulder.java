@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import androidx.annotation.NonNull;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -9,32 +11,38 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Shoulder {
+    // CONSTANTS
     public static final int UP_POSITION = -1400;
     public static final int DOWN_POSITION = 0;
-    public static final double MOTOR_STRENGTH = 0.75;
+    public static final double MOTOR_STRENGTH = 0.9;
+    public static final double WRIST_ON_WALL =  0.6;
 
-    public static final double OPEN_POS = 1;
-    public static final double CLOSED_POS = 0;
+    public static final double OPEN_POS = 0.5;
+    public static final double CLOSED_POS = 0.9;
+
     public static final double WRIST_INC = 0.01;
-    public static final double WRIST_MAX = 1;
-    public static final double WRIST_MIN = 0;
-    public static final double ROLL_MAX = 1;
+    public static final double WRIST_MAX = 0.8;
+    public static final double WRIST_MIN = 0.36;
+
+    public static final double ROLL_MAX = 0.75;
     public static final double ROLL_MIN = 0;
     public static final double ROLL_INC = 0.03;
     public static final double SHOULDER_HEIGHT = 27.305;
 
-    private double wristAng = 0;
-    private double rollPos = 1;
-
+    // STATE VARIABLES
+    private double wristAng = WRIST_MIN;
+    private double rollPos = ROLL_MAX;
     private boolean isOpen = false;
+    private int offset = 0;
 
+    // SUBSYSTEM ASSETS
     private Servo wristServo;
     private Servo openServo;
     private Servo rollServo;
 
     private Telemetry telemetry;
     private DcMotor motor;
-    private int offset = 0;
+
 
     public Shoulder(HardwareMap hardwareMap, Telemetry telemetry) {
         this.motor = hardwareMap.get(DcMotor.class, "arm");
@@ -62,6 +70,26 @@ public class Shoulder {
             motor.setPower(0);
     }
 
+    public void goToPickUp() {
+        if(motor.getCurrentPosition() + offset <= DOWN_POSITION)
+            motor.setPower(MOTOR_STRENGTH);
+        rollServo.setPosition(ROLL_MAX);
+        rollPos = ROLL_MAX;
+        wristServo.setPosition(WRIST_MIN);
+        wristAng = WRIST_MIN;
+        open();
+    }
+
+    public void goToDropOff() {
+        close();
+        if(motor.getCurrentPosition() + offset >= UP_POSITION)
+            motor.setPower(-MOTOR_STRENGTH);
+        rollServo.setPosition(ROLL_MIN);
+        rollPos = ROLL_MIN;
+        wristServo.setPosition(WRIST_ON_WALL);
+        wristAng = WRIST_ON_WALL;
+    }
+
     public void wristUp() {
         wristAng -= WRIST_INC;
         if (wristAng <= WRIST_MIN) {
@@ -70,11 +98,15 @@ public class Shoulder {
         wristServo.setPosition(wristAng);
     }
 
+    public void wristTo(double wristToMove) {
+        wristToMove = Range.clip(wristToMove, WRIST_MIN, WRIST_MAX);
+        wristServo.setPosition(wristToMove);
+        wristAng = wristToMove;
+    }
+
     public void wristDown() {
         wristAng += WRIST_INC;
-        if (wristAng >= WRIST_MAX ) {
-            wristAng = WRIST_MAX;
-        }
+        wristAng = Range.clip(wristAng, WRIST_MIN, WRIST_MAX);
         wristServo.setPosition(wristAng);
 
         //fail safe for hitting ground
@@ -83,11 +115,11 @@ public class Shoulder {
     }
 
     public void open() {
-        openServo.setPosition(1);
+        openServo.setPosition(OPEN_POS);
         isOpen = true;
     }
     public void close() {
-        openServo.setPosition(0);
+        openServo.setPosition(CLOSED_POS);
         isOpen = false;
     }
 
@@ -123,6 +155,12 @@ public class Shoulder {
             rollPos = ROLL_MIN;
 
         rollServo.setPosition(rollPos);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return String.format("OPR: (%f, %f, %f)", openServo.getPosition(), wristServo.getPosition(), rollServo.getPosition());
     }
 
     public void changeOffset(int delta) {

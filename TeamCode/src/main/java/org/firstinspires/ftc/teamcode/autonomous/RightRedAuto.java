@@ -2,27 +2,21 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.ControlSystem;
-import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
-import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
 import org.firstinspires.ftc.teamcode.sensors.DistanceSensor;
 import org.firstinspires.ftc.teamcode.systems.Shoulder;
 import org.firstinspires.ftc.teamcode.vision.Camera;
-import org.firstinspires.ftc.teamcode.wrappers.PIDController;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.List;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous")
-public class Autonomous extends LinearOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Right Red Autonomous")
+public class RightRedAuto extends LinearOpMode {
     // SUBSYSTEMS
     private MecanumDrive drive;
     private Shoulder shoulder;
@@ -53,6 +47,17 @@ public class Autonomous extends LinearOpMode {
 
         camera = new Camera(hardwareMap, telemetry);
 
+        //makes arm not slam on the ground on start of autonomous
+        ElapsedTime rt = new ElapsedTime();
+        shoulder.move(0.1);
+
+        while(opModeInInit() && rt.seconds() <= 3) {
+            wait();
+        }
+
+        shoulder.move(0);
+
+
         waitForStart();
 
         while(rearDistance.getDistance(DistanceUnit.INCH) <= 18 && opModeIsActive()) {
@@ -67,7 +72,7 @@ public class Autonomous extends LinearOpMode {
             telemetry.addData("Rear Distance", rearDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("IMU Angle", drive.getIMU().getZAngle());
             telemetry.update();
-            drive.drive(0.0, 0.0, 0.3);
+            drive.drive(0.0, 0.0, -0.3);
         }
         drive.stop();
 
@@ -81,37 +86,43 @@ public class Autonomous extends LinearOpMode {
             telemetry.addData("IMU Angle", drive.getIMU().getZAngle());
             telemetry.addData("Target", targetAngle);
             telemetry.update();
-            drive.drive(0.0, 0.0, -0.3);
+            drive.drive(0.0, 0.0, 0.3);
         }
         drive.stop();
 
+        shoulder.open();
+        shoulder.wristTo(0.5);
+
         sleep(3000);
+
+        shoulder.close();
+        shoulder.wristTo(0);
 
         while(Math.abs(drive.getIMU().getZAngle()) >= 1 && opModeIsActive()) {
             drive.drive(0.0, 0.0, Math.toRadians(drive.getIMU().getZAngle()));
         }
         drive.stop();
 
-        while((rearDistance.getDistance() >= 6 || leftDistance.getDistance() >= 24) && opModeIsActive()) {
+        while((rearDistance.getDistance() >= 6 || rightDistance.getDistance() >= 24) && opModeIsActive()) {
             telemetry.addData("Rear Distance", rearDistance.getDistance());
-            telemetry.addData("Rear Distance", leftDistance.getDistance());
+            telemetry.addData("Right Distance", rightDistance.getDistance());
             telemetry.addData("IMU Angle", drive.getIMU().getZAngle());
             telemetry.addData("Inputs", "(%.2f, %.2f, %.2f)", (rearDistance.getDistance() - 6),
-                    -(leftDistance.getDistance() - 24),
+                    (rightDistance.getDistance() - 24),
                     Math.toRadians(drive.getIMU().getZAngle()));
             telemetry.update();
 
-
             drive.drive(
                     Range.clip((rearDistance.getDistance() - 6), -1, 1) / 4,
-                    Range.clip((-(leftDistance.getDistance() - 24)), -1, 1) / 4,
+                    Range.clip(((rightDistance.getDistance() - 24)), -1, 1) / 4,
                     Math.toRadians(drive.getIMU().getZAngle()));
         }
         drive.stop();
+
         sleep(100);
         drive.toggleFieldCentric();
         while(Math.abs(drive.getIMU().getZAngle() + 90) >= 1 && opModeIsActive()) {
-            drive.drive(-0.1, 0.0, Math.toRadians(drive.getIMU().getZAngle() + 90));
+            drive.drive(-0.1, 0.0, Math.toRadians(drive.getIMU().getZAngle() - 90));
         }
         drive.toggleFieldCentric();
         drive.stop();
@@ -167,28 +178,15 @@ public class Autonomous extends LinearOpMode {
         }
 
         while(opModeIsActive() && rearDistance.getDistance() >= 8) {
-            drive.drive(0.0, -0.15, 0.0);
+            drive.drive(0.0, 0.15, 0.0);
         }
 
-        while(opModeIsActive() && rightDistance.getDistance() <= 42) {
+        while(opModeIsActive() && leftDistance.getDistance() <= 42) {
             drive.drive(-1.0, 0.0, 0.0);
         }
 
         while(opModeIsActive() && rearDistance.getDistance() >= 1) {
-            drive.drive(0.0, -0.2, 0.0);
+            drive.drive(0.0, 0.2, 0.0);
         }
-        /*
-        PIDController thetaController = new PIDController(telemetry, "theta");
-        double turnStrength = thetaController.getPIDControlledValue(Math.toRadians(drive.getIMU().getZAngle()), targetAngle);
-
-        while(turnStrength >= Constants.INPUT_THRESHOLD && opModeIsActive()) {
-            telemetry.addData("Rear Distance", rearDistance.getDistance(DistanceUnit.INCH));
-            telemetry.addData("IMU Angle", drive.getIMU().getZAngle());
-            telemetry.update();
-            drive.drive(0.0d, 0.0d, turnStrength);
-            turnStrength = thetaController.getPIDControlledValue(Math.toRadians(drive.getIMU().getZAngle()), targetAngle);
-        }
-
-         */
     }
 }

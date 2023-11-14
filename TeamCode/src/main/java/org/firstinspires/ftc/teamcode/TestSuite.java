@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.systems.CascadeArm;
+import org.firstinspires.ftc.teamcode.systems.Shoulder;
 import org.firstinspires.ftc.teamcode.wrappers.PIDController;
 
 import java.io.IOException;
@@ -52,15 +53,8 @@ public class TestSuite extends LinearOpMode {
     }
 
     private void armTest() {
+        Shoulder shoulder = new Shoulder(hardwareMap, telemetry);
 
-        DcMotor rotMotor = hardwareMap.get(DcMotor.class, "rot");
-        DcMotor extendMotor = hardwareMap.get(DcMotor.class, "extend");
-
-
-        while(opModeIsActive()) {
-            rotMotor.setPower(gamepad1.left_stick_y);
-            extendMotor.setPower(gamepad1.right_stick_y);
-        }
     }
 
 }

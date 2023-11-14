@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.drives.Drivetrain;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.systems.CascadeArm;
 import org.firstinspires.ftc.teamcode.systems.Shoulder;
@@ -18,20 +19,12 @@ import java.util.List;
 
 @TeleOp(name="Deimos")
 public class Deimos extends LinearOpMode {
-    public static final double APRIL_TAG_DISTANCE_TARGET = 20;
-    public static final double APRIL_TAG_PRECISION = 5;
-    public static final double APRIL_TAG_MAX_SPEED = 0.4;
 
-    private enum AprilTagToAlign {
-        LEFT,
-        CENTER,
-        RIGHT
-    }
+
 
     private Shoulder shoulderMcShoulderShoulderson;
     private CascadeArm cascadeExtenderRetractorBoi;
     private MecanumDrive driveyMcDriveDriveDriverson;
-    private Camera cameraMcCamCameraCammerson;
     private double lastTime = 0.0d;
     private final ElapsedTime timeyMcTimeTimerTimerson = new ElapsedTime();
 
@@ -39,6 +32,7 @@ public class Deimos extends LinearOpMode {
     private boolean gp2aPressed = false;
     private boolean gp2bPressed = false;
 
+    private Drivetrain.AprilTagToAlign align = Drivetrain.AprilTagToAlign.NONE;
     
     @Override
     public void runOpMode() {
@@ -47,7 +41,6 @@ public class Deimos extends LinearOpMode {
 
         driveyMcDriveDriveDriverson = new MecanumDrive(hardwareMap, telemetry);
         shoulderMcShoulderShoulderson = new Shoulder(hardwareMap, telemetry);
-        cameraMcCamCameraCammerson = new Camera(hardwareMap, telemetry);
         cascadeExtenderRetractorBoi = new CascadeArm(hardwareMap, telemetry);
 
         // Init Loop (runs until stop button or start button is pressed)
@@ -88,18 +81,30 @@ public class Deimos extends LinearOpMode {
      * feature is required.
      */
     private void driver1Inputs() {
-        // DPad inputs, checking for overload; control for the drivetrain to rotate the robot
-        boolean dpadUp = (gamepad1.dpad_up && !gamepad1.dpad_down);
-        boolean dpadDown = (gamepad1.dpad_down && !gamepad1.dpad_up);
-        boolean dpadLeft = (gamepad1.dpad_left && !gamepad1.dpad_right);
-        boolean dpadRight = (gamepad1.dpad_right && !gamepad1.dpad_left);
+        // Toggle field-centric mode
+        boolean aDown = gamepad1.a && !gp1aPressed && !gamepad1.start;
 
-        if(dpadLeft && !(dpadUp || dpadRight)) {
-            alignToAprilTag(AprilTagToAlign.LEFT);
-        } else if(dpadUp && !(dpadLeft || dpadRight)) {
-            alignToAprilTag(AprilTagToAlign.CENTER);
-        } else if(dpadRight && !(dpadUp || dpadLeft)) {
-            alignToAprilTag(AprilTagToAlign.RIGHT);
+        // ---DETERMINE IF WE'RE ALIGNING TO AN APRIL TAG----
+        boolean dpadUpPressed = (gamepad1.dpad_up && !gamepad1.dpad_down);
+        boolean dpadDownPressed = (gamepad1.dpad_down && !gamepad1.dpad_up);
+        boolean dpadLeftPressed = (gamepad1.dpad_left && !gamepad1.dpad_right);
+        boolean dpadRightPressed = (gamepad1.dpad_right && !gamepad1.dpad_left);
+        if(dpadLeftPressed && !(dpadUpPressed || dpadDownPressed || dpadRightPressed)) {
+            align = Drivetrain.AprilTagToAlign.LEFT;
+        } else if(dpadRightPressed && !(dpadUpPressed || dpadDownPressed || dpadLeftPressed)) {
+            align = Drivetrain.AprilTagToAlign.RIGHT;
+        } else if(dpadUpPressed && !(dpadLeftPressed || dpadDownPressed || dpadRightPressed)) {
+            align = Drivetrain.AprilTagToAlign.CENTER;
+        } else if(dpadDownPressed && !(dpadUpPressed || dpadLeftPressed || dpadRightPressed)) {
+            align = Drivetrain.AprilTagToAlign.NONE;
+        }
+
+        // is the pilot denied control of the robot while we line up to an April tag?
+        if(align != Drivetrain.AprilTagToAlign.NONE) {
+            if(!driveyMcDriveDriveDriverson.alignToAprilTag(align)) {
+                align = Drivetrain.AprilTagToAlign.NONE;
+            }
+        // listen to driver controls
         } else {
             telemetry.addData("Drive", "Listening to LSX, LSY, RSX");
             double forward = gamepad1.left_stick_y;
@@ -114,15 +119,10 @@ public class Deimos extends LinearOpMode {
             driveyMcDriveDriveDriverson.drive(forward, strafe, turn);
         }
 
-        if(gamepad1.a && !gp1aPressed && !gamepad1.start) {
+        if(aDown) {
             driveyMcDriveDriveDriverson.toggleFieldCentric();
         }
-
-        if(driveyMcDriveDriveDriverson.getFieldCentric())
-            telemetry.addData("Mode", "Field Centric");
-        else
-            telemetry.addData("Mode", "Robot Centric");
-
+        // Avoid double pressing the A button by storing its last state
         gp1aPressed = gamepad1.a;
     }
 
@@ -131,13 +131,11 @@ public class Deimos extends LinearOpMode {
      * This function's implementation changes quickly and rapidly every year.
      */
     private void driver2Inputs() {
+
         // LEFT STICK'S Y IS SHOULDER
         double shoulderRotate = gamepad2.left_stick_y;
-        // RIGHT STICK's Y IS CASCADE
-        double cascadeDirection = gamepad2.right_stick_y;
         // DEADZONE
         if(Math.abs(shoulderRotate) <= Constants.INPUT_THRESHOLD) shoulderRotate = 0;
-        if(Math.abs(cascadeDirection) <= Constants.INPUT_THRESHOLD) cascadeDirection = 0;
         // Offsets
         if(Math.abs(gamepad2.left_trigger) >= Constants.INPUT_THRESHOLD)
             shoulderMcShoulderShoulderson.changeOffset(5);
@@ -145,103 +143,43 @@ public class Deimos extends LinearOpMode {
             shoulderMcShoulderShoulderson.changeOffset(-5);
         // MOVE
 
-        telemetry.addData("GP2Info", String.format("(%.2f, %.2f)", shoulderRotate, cascadeDirection));
 
-        shoulderMcShoulderShoulderson.move(shoulderRotate);
-        cascadeExtenderRetractorBoi.move(cascadeDirection);
-        if(gamepad2.a && !gp2aPressed && !gamepad2.start){
-            shoulderMcShoulderShoulderson.toggleRoll();
+        if(gamepad2.x) shoulderMcShoulderShoulderson.goToPickUp();
+            // Y BUTTON GO TO DROP OFF
+        else if(gamepad2.y) shoulderMcShoulderShoulderson.goToDropOff();
+        else {
+            shoulderMcShoulderShoulderson.move(shoulderRotate);
+            if(gamepad2.a && !gp2aPressed && !gamepad2.start){
+                shoulderMcShoulderShoulderson.toggleRoll();
+            }
+
+            if(gamepad2.dpad_up && !gamepad2.dpad_down) {
+                shoulderMcShoulderShoulderson.wristUp();
+            } else if(gamepad2.dpad_down && !gamepad2.dpad_up) {
+                shoulderMcShoulderShoulderson.wristDown();
+            }
+
+            if(gamepad2.dpad_left && !gamepad2.dpad_right) {
+                shoulderMcShoulderShoulderson.rollNegative();
+            } else if(gamepad2.dpad_right && !gamepad2.dpad_left) {
+                shoulderMcShoulderShoulderson.rollPositive();
+            }
+
+            if(gamepad2.b && !gp2bPressed && !gamepad2.start){
+                shoulderMcShoulderShoulderson.toggleOpen();
+                telemetry.addData("Hand open", gamepad2.b);
+            }
         }
-
-        if(gamepad2.dpad_up && !gamepad2.dpad_down) {
-            shoulderMcShoulderShoulderson.wristUp();
-        } else if(gamepad2.dpad_down && !gamepad2.dpad_up) {
-            shoulderMcShoulderShoulderson.wristDown();
-        }
-
-        if(gamepad2.dpad_left && !gamepad2.dpad_right) {
-            shoulderMcShoulderShoulderson.rollNegative();
-        } else if(gamepad2.dpad_right && !gamepad2.dpad_left) {
-            shoulderMcShoulderShoulderson.rollPositive();
-        }
-
-        if(gamepad2.b && !gp2bPressed && !gamepad2.start){
-            shoulderMcShoulderShoulderson.toggleOpen();
-            telemetry.addData("Hand open", gamepad2.b);
-        }
-
-
+        telemetry.addData("GP2Info", String.format("(%.2f)", shoulderRotate));
 
         gp2aPressed = gamepad2.a;
         gp2bPressed = gamepad2.b;
+
+        telemetry.addData("Arm", shoulderMcShoulderShoulderson);
+        //help me i am here against my will
+        //Pic has me trapped
+        //he hits me sometimes
+
     }
 
-    private void alignToAprilTag(AprilTagToAlign alignment) {
-        switch (alignment) {
-            case LEFT: telemetry.addData("Aligning To", "Left"); break;
-            case CENTER: telemetry.addData("Aligning To", "Center"); break;
-            case RIGHT: telemetry.addData("Aligning To", "Right"); break;
-        }
-        // Get AprilTags
-        AprilTagDetection correctTag;
-        List<AprilTagDetection> detections = cameraMcCamCameraCammerson.getDetections();
-        if(detections.size() == 0) {
-            driveyMcDriveDriveDriverson.stop();
-            telemetry.addData("Detections", "No AprilTags found");
-            return;
-        }
-
-        telemetry.addData("Detections", detections.size());
-
-        do {
-            AprilTagDetection detection = detections.get(0);
-            telemetry.addData("Tracking XYZ", "(%.2f, %.2f, %.2f)",
-                    detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
-            telemetry.addData("Tracking YPR", "(%.2f, %.2f, %.2f)",
-                    detection.ftcPose.yaw, detection.ftcPose.pitch, detection.ftcPose.roll);
-
-            // According to the alignment, we need to find if one of the tags is the correct one,
-            // or if we have to adjust to find it.
-            if(alignment == AprilTagToAlign.LEFT) {
-                double turn = Math.toRadians(-detection.ftcPose.yaw / (3 * APRIL_TAG_PRECISION));
-                if(detection.metadata.name.toLowerCase().contains("left")) {
-                    telemetry.addData("Position", "Finalizing");
-                    // Treat the flight stick inversion
-                    double forward = Range.clip((detection.ftcPose.y - APRIL_TAG_DISTANCE_TARGET) / APRIL_TAG_PRECISION, -APRIL_TAG_MAX_SPEED, APRIL_TAG_MAX_SPEED);
-                    // Reversed since the camera is on the back of the robot
-                    double strafe = Range.clip((-detection.ftcPose.x) / APRIL_TAG_PRECISION, -APRIL_TAG_MAX_SPEED, APRIL_TAG_MAX_SPEED);
-
-                    if (
-                            Math.abs(forward) <= Constants.INPUT_THRESHOLD &&
-                                    Math.abs(strafe) <= Constants.INPUT_THRESHOLD &&
-                                    Math.abs(turn) <= Constants.INPUT_THRESHOLD
-                    ) {
-                        driveyMcDriveDriveDriverson.stop();
-                        telemetry.addData("Movement", "Done");
-                        return;
-                    }
-
-                    telemetry.addData("Movement", "(%.2f, %.2f, %.2f)",
-                            forward, strafe, turn);
-
-                    driveyMcDriveDriveDriverson.drive(forward, strafe, turn);
-                } else {
-                    telemetry.addData("Position", "Wrong Tag");
-                    // Treat the flight stick, even if it's the wrong tag, it'll still be correct to adjust to
-                    double forward = Range.clip((detection.ftcPose.y - APRIL_TAG_DISTANCE_TARGET) / APRIL_TAG_PRECISION, -APRIL_TAG_MAX_SPEED, APRIL_TAG_MAX_SPEED);
-                    // Reversed since the camera is on the back of the robot
-                    double strafe = APRIL_TAG_MAX_SPEED;
-
-                    telemetry.addData("Movement", "(%.2f, %.2f, %.2f)",
-                            forward, strafe, turn);
-
-                    driveyMcDriveDriveDriverson.drive(forward, strafe, turn);
-                }
-                break;
-            }
-
-            telemetry.update();
-            detections = cameraMcCamCameraCammerson.getDetections();
-        } while(detections.size() != 0 && !gamepad1.dpad_down && !isStopRequested());
-    }
 }

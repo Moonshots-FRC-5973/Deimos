@@ -14,7 +14,6 @@ public class CascadeArm {
 
     public CascadeArm(HardwareMap hardwareMap, Telemetry telemetry) {
         motor = hardwareMap.get(DcMotor.class, "cascade");
-       // motor.setDirection(DcMotorSimple.Direction.REVERSE);
         this.telemetry = telemetry;
     }
     public void move(double strength){

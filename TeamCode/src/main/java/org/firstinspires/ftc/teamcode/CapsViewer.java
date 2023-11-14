@@ -11,11 +11,17 @@ import org.firstinspires.ftc.teamcode.drives.Drivetrain;
 import org.firstinspires.ftc.teamcode.drives.MecanumDrive;
 import org.firstinspires.ftc.teamcode.drives.SwerveDrive;
 import org.firstinspires.ftc.teamcode.sensors.DistanceSensor;
+import org.firstinspires.ftc.teamcode.vision.Camera;
 import org.firstinspires.ftc.teamcode.wrappers.IMU;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.io.IOException;
+import java.util.List;
 
 @TeleOp(name = "Capability Viewer")
 public class CapsViewer extends LinearOpMode {
     private Drivetrain drive;
+    private Camera camera;
     private DistanceSensor rearDistance;
     private DistanceSensor leftDistance;
     private DistanceSensor rightDistance;
@@ -38,10 +44,15 @@ public class CapsViewer extends LinearOpMode {
         SENSOR_VIEW,
         CV_VIEW,
         SERVO_VIEW,
+    }
 
+    public enum CameraState {
+        AVAILABLE,
+        UNAVAILABLE
     }
 
     private DriveType driveType = DriveType.NONE;
+    private CameraState cameraState = CameraState.UNAVAILABLE;
 
     private Page currentPage = Page.IMU_VIEW;
     private Page nextPage = Page.SENSOR_VIEW;
@@ -61,6 +72,8 @@ public class CapsViewer extends LinearOpMode {
                 driveType = DriveType.MECANUM;
             }
             imu = drive.getIMU();
+            camera = drive.getCamera();
+            cameraState = CameraState.AVAILABLE;
         } catch (Exception e) {
             imu = new IMU(hardwareMap, new com.qualcomm.robotcore.hardware.IMU.Parameters(
                     new RevHubOrientationOnRobot(
@@ -68,8 +81,18 @@ public class CapsViewer extends LinearOpMode {
                             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
                     )
             ));
+            try {
+                camera = new Camera(hardwareMap, telemetry);
+                cameraState = CameraState.AVAILABLE;
+            } catch (Exception f) {
+                camera = null;
+                cameraState = CameraState.UNAVAILABLE;
+            }
+
             driveType = DriveType.NONE;
         }
+
+
 
         rearDistance = new DistanceSensor(hardwareMap, "rear");
         leftDistance = new DistanceSensor(hardwareMap, "left");
@@ -112,8 +135,26 @@ public class CapsViewer extends LinearOpMode {
                     break;
                 case CV_VIEW:
                     telemetry.addData("Page", "CV");
-                    prevPage = Page.SENSOR_VIEW;
-                    nextPage = Page.SERVO_VIEW;
+                    if(cameraState != CameraState.UNAVAILABLE) {
+                        telemetry.addData("Camera", "Available");
+                        List<AprilTagDetection> currentDetections = camera.getDetections();
+                        telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+                        for (AprilTagDetection detection : currentDetections) {
+                            if (detection.metadata != null) {
+                                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                            } else {
+                                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+                            }
+                        }
+                        prevPage = Page.SENSOR_VIEW;
+                        nextPage = Page.SERVO_VIEW;
+                    } else
+                        telemetry.addData("Camera", "Unavailable");
                     break;
                 case SERVO_VIEW:
                     telemetry.addData("Page", "Servo");
